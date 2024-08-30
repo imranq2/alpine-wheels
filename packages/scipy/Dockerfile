@@ -10,7 +10,7 @@ ENV LAPACK=/usr/lib/libopenblas.so
 
 # Build wheels for the specified version of Scipy
 ARG PACKAGE_VERSION
-RUN pip wheel scipy==$PACKAGE_VERSION --no-deps -w /wheels
+RUN pip wheel --no-cache-dir scipy==$PACKAGE_VERSION --no-deps -w /wheels
 
 # Output wheels to the local directory
 CMD ["cp", "-r", "/wheels", "/wheels-output"]
