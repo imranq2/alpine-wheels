@@ -1,0 +1,10 @@
+<html>
+<body>
+<h1>My Private PyPI Index</h1>
+<ul>
+  {% for package in packages %}
+    <li><a href="{{ package }}">{{ package }}</a></li>
+  {% endfor %}
+</ul>
+</body>
+</html>
