@@ -1,7 +1,8 @@
 .PHONY: numpy
 numpy:
 	cd packages/numpy && \
-	docker buildx build --no-cache --progress=plain --platform linux/arm64 --build-arg PACKAGE_VERSION=1.26.4 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 --build-arg PACKAGE_VERSION=1.26.4 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 --build-arg PACKAGE_VERSION=1.26.4 --build-arg PYTHON_VERSION=3.10 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
 
 .PHONY: scipy
 scipy:

@@ -3,9 +3,27 @@ name: Build and Deploy Wheels
 on:
   workflow_dispatch:
     inputs:
+      python_version:
+        description: 'Python version to use'
+        required: true
+        type: choice
+        options:
+          - 3.8
+          - 3.9
+          - 3.10
+          - 3.11
+          - 3.12
+        default: '3.12'
       package_name:
         description: 'Package name to build'
         required: true
+        type: choice
+        options:
+          - numpy
+          - scipy
+          - shapely
+          - google-crc32c
+          - grpcio
       package_version:
         description: 'Package version to build'
         required: true
@@ -31,6 +49,7 @@ jobs:
           cd packages/${{ github.event.inputs.package_name }}
           docker buildx build --platform linux/${{ matrix.arch }} \
           --build-arg PACKAGE_VERSION=${{ github.event.inputs.package_version }} \
+          --build-arg PYTHON_VERSION=${{ github.event.inputs.python_version }} \
           -t my-${{ github.event.inputs.package_name }}-builder:latest \
           --output type=local,dest=../../wheels .
 
