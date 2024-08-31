@@ -1,4 +1,8 @@
-FROM public.ecr.aws/docker/library/python:3.12-alpine3.20
+ARG PYTHON_VERSION=3.12
+ARG ALPINE_VERSION=3.20
+
+FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+
 
 # Install common tools and dependencies
 RUN apk add --no-cache gfortran openblas-dev lapack-dev cython py3-pip py3-setuptools py3-wheel g++ linux-headers
