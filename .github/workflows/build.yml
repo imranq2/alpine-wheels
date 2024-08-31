@@ -38,7 +38,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wheels
-          path: ./wheels/*.whl  # Only upload wheel files
+          path: ./wheels/wheels/*.whl  # Only upload wheel files
           if-no-files-found: warn
 
   upload-wheels:
@@ -52,7 +52,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: wheels
-          path: wheels
+          path: ./wheels
 
       - name: Upload wheels to GitHub Pages
         run: |
