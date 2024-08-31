@@ -1,7 +1,7 @@
 FROM public.ecr.aws/docker/library/python:3.12-alpine3.20
 
 # Install common tools and dependencies
-RUN apk add --no-cache build-base gfortran openblas-dev lapack-dev
+RUN apk add --no-cache gfortran openblas-dev lapack-dev cython py3-pip py3-setuptools py3-wheel g++ linux-headers
 
 # Set environment variables for OpenBLAS
 ENV BLAS=/usr/lib/libopenblas.so
