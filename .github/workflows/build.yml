@@ -73,15 +73,13 @@ jobs:
           echo "<html><body><ul>" > index.html
           for package in $(ls -d */); do
             package_name=${package%/}
-            echo "<li><a href=\"$package_name/\">$package_name</a></li>" >> index.html
+            echo "<li><a href=\"$package_name/\">$package_name/index.html</a></li>" >> index.html
       
             # Generate index.html for each package
             mkdir -p "$package_name"
             echo "<html><body><h1>$package_name</h1><ul>" > "$package_name/index.html"
-            for version in $(ls -d ${package_name}*/); do
-              version_name=${version%/}
-              echo "<li><a href=\"$version_name/\">$version_name</a></li>" >> "$package_name/index.html"
-            done
+            for package_file in $(ls ${package_name}*/); do
+              echo "<li><a href=\"$package_file\">$package_file</a></li>" >> "$package_name/index.html"
             echo "</ul></body></html>" >> "$package_name/index.html"
           done
           echo "</ul></body></html>" >> index.html
