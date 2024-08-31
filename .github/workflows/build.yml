@@ -38,15 +38,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wheels
-          path: wheels
-
-      - name: 'Cleanup build folder'
-        if: always()
-        working-directory: ${{ github.run_id }}
-        run: |
-          ls -la ./
-          sudo rm -rf ${{ github.workspace }}/*
-          ls -la ./
+          path: ./wheels/*.whl  # Only upload wheel files
+          if-no-files-found: warn
 
   upload-wheels:
     runs-on: ubuntu-latest
@@ -87,11 +80,3 @@ jobs:
           git add index.html
           git commit -m "Update index.html"
           git push
-
-      - name: 'Cleanup build folder'
-        if: always()
-        working-directory: ${{ github.run_id }}
-        run: |
-          ls -la ./
-          sudo rm -rf ${{ github.workspace }}/*
-          ls -la ./
