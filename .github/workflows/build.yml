@@ -78,8 +78,10 @@ jobs:
             # Generate index.html for each package
             mkdir -p "$package_name"
             echo "<html><body><h1>$package_name</h1><ul>" > "$package_name/index.html"
-            for package_file in $(ls "${package_name}/"); do
-              echo "<li><a href=\"$package_file\">$package_file</a></li>" >> "$package_name/index.html"
+            for package_file in $(ls "${package_name}/"*.whl 2>/dev/null); do
+             # Only include .whl files
+              file_name=$(basename "$package_file")
+              echo "<li><a href=\"$file_name\">$file_name</a></li>" >> "$package_name/index.html"
             done
             echo "</ul></body></html>" >> "$package_name/index.html"
           done
