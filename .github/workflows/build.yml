@@ -43,6 +43,7 @@ jobs:
 
       - name: Upload wheels to GitHub Pages
         run: |
+          ls -haltR .
           mkdir -p docs/${{ github.event.inputs.package_name }}/${{ github.event.inputs.package_version }}
           mv wheels/* docs/${{ github.event.inputs.package_name }}/${{ github.event.inputs.package_version }}/
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
