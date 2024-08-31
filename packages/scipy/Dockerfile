@@ -14,6 +14,3 @@ RUN pip wheel --no-cache-dir scipy==$PACKAGE_VERSION --no-deps -w /wheels
 
 # List the contents of the /wheels directory to verify the build
 RUN ls -l /wheels
-
-# Output wheels to the local directory
-CMD ["sh", "-c", "mkdir -p /wheels-output && cp -r /wheels/* /wheels-output/"]
