@@ -35,6 +35,12 @@ jobs:
       matrix:
         arch: [arm64, amd64]
     steps:
+      - name: Print input values
+        run: |
+          echo "Python Version: ${{ github.event.inputs.python_version }}"
+          echo "Package Name: ${{ github.event.inputs.package_name }}"
+          echo "Package Version: ${{ github.event.inputs.package_version }}"
+
       - name: Checkout code
         uses: actions/checkout@v4
 
