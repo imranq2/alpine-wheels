@@ -14,7 +14,7 @@ ENV LAPACK=/usr/lib/libopenblas.so
 
 # Build wheels for the specified version of Scipy
 ARG PACKAGE_VERSION
-RUN pip wheel --no-cache-dir scipy==$PACKAGE_VERSION --no-deps -w /wheels
+RUN pip wheel --no-cache-dir scipy==$PACKAGE_VERSION --no-deps -w /wheels --extra-index-url https://alpine-wheels.github.io/index
 
 # List the contents of the /wheels directory to verify the build
 RUN ls -l /wheels
