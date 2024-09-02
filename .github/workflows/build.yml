@@ -90,6 +90,7 @@ jobs:
           git config --global user.name "GitHub Actions"
           git add docs/
           git commit -m "Add wheels for ${{ github.event.inputs.package_name }} ${{ github.event.inputs.package_version }}"
+          git pull --rebase origin main  # Pull the latest changes and rebase
           git push
 
       - name: Update index.html
