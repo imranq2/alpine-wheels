@@ -81,6 +81,10 @@ jobs:
           merge-multiple: true
           path: ./wheels
 
+      - name: Install Git LFS
+        run: |
+          git lfs install
+
       - name: Upload wheels to GitHub Pages
         run: |
           ls -haltR .
