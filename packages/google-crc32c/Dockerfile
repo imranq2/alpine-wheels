@@ -20,6 +20,8 @@ RUN pip wheel --verbose --no-cache-dir google-crc32c==$PACKAGE_VERSION -w dist_w
 
 RUN pip install auditwheel
 
+RUN for whl in dist_wheels/google_crc32c*.whl; do auditwheel show "${whl}"; done
+
 RUN for whl in dist_wheels/google_crc32c*.whl; do auditwheel repair "${whl}" --wheel-dir wheels/; done
 
 # List the contents of the /wheels directory to verify the build
