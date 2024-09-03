@@ -43,3 +43,8 @@ sentence-transformers:
 nltk:
 	cd packages/default && \
 	docker buildx build --no-cache --progress=plain --platform linux/arm64 --build-arg PACKAGE_NAME=nltk --build-arg PACKAGE_VERSION=3.9.1 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
+
+.PHONY: gensim
+gensim:
+	cd packages/gensim && \
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 --build-arg PACKAGE_VERSION=4.3.3 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
