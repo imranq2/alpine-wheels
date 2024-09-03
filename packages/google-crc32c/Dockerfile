@@ -5,7 +5,7 @@ FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSI
 
 
 # Install common tools and dependencies
-RUN apk add --no-cache git build-base gcc musl-dev python3-dev libffi-dev
+RUN apk add --no-cache git build-base gcc musl-dev python3-dev libffi-dev crc32c-dev
 
 # Build wheels for the specified version
 ARG PACKAGE_VERSION
