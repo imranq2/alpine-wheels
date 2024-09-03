@@ -36,5 +36,10 @@ pymongo:
 
 .PHONY: sentence-transformers
 sentence-transformers:
-	cd packages/sentence-transformers && \
-	docker buildx build --no-cache --progress=plain --platform linux/arm64 --build-arg PACKAGE_VERSION=2.7.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
+	cd packages/default && \
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 --build-arg PACKAGE_NAME=sentence-transformers --build-arg PACKAGE_VERSION=2.7.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
+
+.PHONY: nltk
+nltk:
+	cd packages/default && \
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 --build-arg PACKAGE_NAME=nltk --build-arg PACKAGE_VERSION=3.9.1 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .

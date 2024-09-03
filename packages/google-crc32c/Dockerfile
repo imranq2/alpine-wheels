@@ -20,9 +20,9 @@ RUN ls -haltR dist_wheels/
 
 RUN pip install auditwheel
 
-RUN for whl in dist_wheels/google_crc32c*.whl; do auditwheel show "${whl}"; done
+RUN for whl in dist_wheels/*.whl; do auditwheel show "${whl}"; done
 
-RUN for whl in dist_wheels/google_crc32c*.whl; do auditwheel repair "${whl}" --wheel-dir wheels/; done
+RUN for whl in dist_wheels/*.whl; do auditwheel repair "${whl}" --wheel-dir wheels/; done
 
 # List the contents of the /wheels directory to verify the build
 RUN ls -l /wheels
