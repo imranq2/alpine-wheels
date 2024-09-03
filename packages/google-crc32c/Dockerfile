@@ -16,6 +16,8 @@ ENV CRC32C_PURE_PYTHON=False
 ARG PACKAGE_VERSION
 RUN pip wheel --verbose --no-cache-dir google-crc32c==$PACKAGE_VERSION -w dist_wheels/
 
+RUN ls -haltR dist_wheels/
+
 RUN pip install auditwheel
 
 RUN for whl in dist_wheels/google_crc32c*.whl; do auditwheel show "${whl}"; done
