@@ -24,6 +24,12 @@ on:
           - shapely
           - google-crc32c
           - grpcio
+          - fastapi
+          - pymongo
+      custom_package_name:
+        description: 'Custom package name to build (if set, overrides package_name)'
+        required: false
+        type: string
       package_version:
         description: 'Package version to build'
         required: true
@@ -31,7 +37,7 @@ on:
 jobs:
   build-wheels:
     runs-on: ubuntu-latest
-    name: ${{ matrix.arch }} Build wheel ${{ github.event.inputs.package_name }} ${{ github.event.inputs.package_version }} on Python ${{ github.event.inputs.python_version }}
+    name: ${{ matrix.arch }} ${{ env.PACKAGE_NAME }} ${{ github.event.inputs.package_version }} on Python ${{ github.event.inputs.python_version }}
     strategy:
       matrix:
         arch: [arm64, amd64]
@@ -40,7 +46,17 @@ jobs:
         run: |
           echo "Python Version: ${{ github.event.inputs.python_version }}"
           echo "Package Name: ${{ github.event.inputs.package_name }}"
+          echo "Custom Package Name: ${{ github.event.inputs.custom_package_name }}"          
           echo "Package Version: ${{ github.event.inputs.package_version }}"
+
+      - name: Determine Package Name
+        id: package-name
+        run: |
+          if [ -n "${{ github.event.inputs.custom_package_name }}" ]; then
+            echo "PACKAGE_NAME=${{ github.event.inputs.custom_package_name }}" >> $GITHUB_ENV
+          else
+            echo "PACKAGE_NAME=${{ github.event.inputs.package_name }}" >> $GITHUB_ENV
+          fi
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -53,11 +69,19 @@ jobs:
 
       - name: Build Package Wheel
         run: |
-          cd packages/${{ github.event.inputs.package_name }}
+          PACKAGE_DOCKERFILE="packages/${{ env.PACKAGE_NAME }}/Dockerfile"
+          if [ -f "$PACKAGE_DOCKERFILE" ]; then
+            DOCKERFILE_PATH=$PACKAGE_DOCKERFILE
+          else
+            DOCKERFILE_PATH="packages/default/Dockerfile"
+          fi
+
           docker buildx build --platform linux/${{ matrix.arch }} \
+          --build-arg PACKAGE_NAME=${{ env.PACKAGE_NAME }} \
           --build-arg PACKAGE_VERSION=${{ github.event.inputs.package_version }} \
           --build-arg PYTHON_VERSION=${{ github.event.inputs.python_version }} \
-          -t my-${{ github.event.inputs.package_name }}-builder:latest \
+          -f $DOCKERFILE_PATH \
+          -t my-${{ env.PACKAGE_NAME }}-builder:latest \
           --output type=local,dest=../../wheels .
 
       - name: Persist wheels directory
@@ -74,7 +98,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download wheels artifact
+      - name: Set PACKAGE_NAME
+        run: |
+          if [ -n "${{ github.event.inputs.custom_package_name }}" ]; then
+            echo "PACKAGE_NAME=${{ github.event.inputs.custom_package_name }}" >> $GITHUB_ENV
+          else
+            echo "PACKAGE_NAME=${{ github.event.inputs.package_name }}" >> $GITHUB_ENV
+          fi
+
+      - name: Download ${{ env.PACKAGE_NAME }} Wheels Artifact
         uses: actions/download-artifact@v4
         with:
           pattern: wheels-*
@@ -88,12 +120,12 @@ jobs:
       - name: Upload wheels to GitHub Pages
         run: |
           ls -haltR .
-          mkdir -p docs/${{ github.event.inputs.package_name }}
-          mv -f wheels/* docs/${{ github.event.inputs.package_name }}/
+          mkdir -p docs/${{ env.PACKAGE_NAME }}
+          mv -f wheels/* docs/${{ env.PACKAGE_NAME }}/
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "GitHub Actions"
           git add docs/
-          git commit -m "Add wheels for ${{ github.event.inputs.package_name }} ${{ github.event.inputs.package_version }}"
+          git commit -m "Add wheels for ${{ env.PACKAGE_NAME }} ${{ github.event.inputs.package_version }}"
           git pull --rebase origin main  # Pull the latest changes and rebase
           git push
 
