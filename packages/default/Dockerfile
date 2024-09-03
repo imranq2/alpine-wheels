@@ -9,7 +9,7 @@ RUN apk add --no-cache git build-base gcc musl-dev python3-dev libffi-dev
 # Build wheels for the specified version
 ARG PACKAGE_NAME
 ARG PACKAGE_VERSION
-RUN pip wheel --no-cache-dir ${PACKAGE_NAME}==$PACKAGE_VERSION --no-deps -w /wheels
+RUN pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==$PACKAGE_VERSION --no-deps -w /wheels
 
 # List the contents of the /wheels directory to verify the build
 RUN ls -l /wheels

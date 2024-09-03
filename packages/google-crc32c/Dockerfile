@@ -3,13 +3,22 @@ ARG ALPINE_VERSION=3.20
 
 FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
 
-
 # Install common tools and dependencies
 RUN apk add --no-cache git build-base gcc musl-dev python3-dev libffi-dev crc32c-dev
 
+# Install Cython to ensure the C extension is built
+RUN pip install --no-cache-dir cython
+
+# Set environment variables to force build with C extension
+ENV GOOGLE_CRC32C_BUILD_WITH_CYTHON=True
+ENV GOOGLE_CRC32C_USE_C_LIB=False
+
 # Build wheels for the specified version
 ARG PACKAGE_VERSION
-RUN pip wheel --no-cache-dir google-crc32c==$PACKAGE_VERSION --no-deps -w /wheels
+RUN pip wheel --verbose --no-cache-dir google-crc32c==$PACKAGE_VERSION --no-deps -w /wheels
 
 # List the contents of the /wheels directory to verify the build
 RUN ls -l /wheels
+
+# Check the package, try and load the native library.
+#RUN pip install --no-index --find-links=/wheels google-crc32c==$PACKAGE_VERSION && python -c 'from google_crc32c import _crc32c; print("_crc32c: {}".format(_crc32c)); print("dir(_crc32c): {}".format(dir(_crc32c)))'
