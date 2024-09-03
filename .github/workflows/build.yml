@@ -37,7 +37,7 @@ on:
 jobs:
   build-wheels:
     runs-on: ubuntu-latest
-    name: ${{ matrix.arch }} ${{ env.PACKAGE_NAME }} ${{ github.event.inputs.package_version }} on Python ${{ github.event.inputs.python_version }}
+    name: ${{ matrix.arch }} ${{ github.event.inputs.package_name }} ${{ github.event.inputs.package_version }} on Python ${{ github.event.inputs.python_version }}
     strategy:
       matrix:
         arch: [arm64, amd64]
