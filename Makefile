@@ -23,3 +23,13 @@ google-crc32c:
 grpcio:
 	cd packages/grpcio && \
 	docker buildx build --no-cache --progress=plain --platform linux/arm64 --build-arg PACKAGE_VERSION=1.66.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
+
+.PHONY: fastapi
+fastapi:
+	cd packages/default && \
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 --build-arg PACKAGE_NAME=fastapi --build-arg PACKAGE_VERSION=0.112.2 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
+
+.PHONY: pymongo
+pymongo:
+	cd packages/default && \
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 --build-arg PACKAGE_NAME=pymongo --build-arg PACKAGE_VERSION=4.8.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
