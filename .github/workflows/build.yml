@@ -88,8 +88,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wheels-${{ matrix.arch }}
-          path: ./wheels/wheels/*.whl  # Only upload wheel files
-          if-no-files-found: warn
+          path: ./wheels/**/*.whl  # Recursively find and upload all .whl files
+          if-no-files-found: error
 
   upload-wheels:
     runs-on: ubuntu-latest
