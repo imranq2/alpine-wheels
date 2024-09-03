@@ -26,6 +26,7 @@ on:
           - grpcio
           - fastapi
           - pymongo
+          - sentence-transformers
       custom_package_name:
         description: 'Custom package name to build (if set, overrides package_name)'
         required: false

@@ -33,3 +33,8 @@ fastapi:
 pymongo:
 	cd packages/default && \
 	docker buildx build --no-cache --progress=plain --platform linux/arm64 --build-arg PACKAGE_NAME=pymongo --build-arg PACKAGE_VERSION=4.8.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
+
+.PHONY: sentence-transformers
+sentence-transformers:
+	cd packages/sentence-transformers && \
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 --build-arg PACKAGE_VERSION=2.7.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
