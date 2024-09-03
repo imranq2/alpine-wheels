@@ -27,6 +27,7 @@ on:
           - fastapi
           - pymongo
           - sentence-transformers
+          - nltk
       custom_package_name:
         description: 'Custom package name to build (if set, overrides package_name)'
         required: false
