@@ -1,7 +1,9 @@
 ARG PYTHON_VERSION=3.12
 ARG ALPINE_VERSION=3.20
+# Build wheels for the specified version
+ARG PACKAGE_VERSION
 
-FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+FROM public.ecr.aws/docker/library/python:${PACKAGE_VERSION}-alpine${ALPINE_VERSION}
 
 RUN apk add --no-cache git
 RUN git clone --recursive --branch v${PYTHON_VERSION} https://github.com/pytorch/pytorch
@@ -20,9 +22,6 @@ RUN apk add --no-cache cmake make gcc g++ libffi-dev openssl-dev zlib-dev
 ENV BLAS=OpenBLAS
 ENV LAPACK=LAPACK
 
-
-# Build wheels for the specified version of Scipy
-ARG PACKAGE_VERSION
 
 # Environment variables for PyTorch build
 # https://github.com/pytorch/pytorch/blob/main/setup.py
