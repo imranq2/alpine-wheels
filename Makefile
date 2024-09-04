@@ -48,3 +48,8 @@ nltk:
 gensim:
 	cd packages/gensim && \
 	docker buildx build --no-cache --progress=plain --platform linux/arm64 --build-arg PACKAGE_VERSION=4.3.3 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
+
+.PHONY: torch
+torch:
+	cd packages/torch && \
+	docker buildx build --progress=plain --platform linux/arm64 --build-arg PACKAGE_VERSION=2.3.1 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
