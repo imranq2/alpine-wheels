@@ -1,12 +1,14 @@
 ARG PYTHON_VERSION=3.12
 ARG ALPINE_VERSION=3.20
+
+FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
 # Build wheels for the specified version
 ARG PACKAGE_VERSION
 
-FROM public.ecr.aws/docker/library/python:${PACKAGE_VERSION}-alpine${ALPINE_VERSION}
-
 RUN apk add --no-cache git
-RUN git clone --recursive --branch v${PYTHON_VERSION} https://github.com/pytorch/pytorch
+
+RUN echo "Building wheels for PyTorch version ${PACKAGE_VERSION}"
+RUN git clone --recursive --branch v${PACKAGE_VERSION} https://github.com/pytorch/pytorch
 
 # Install common tools and dependencies
 RUN apk add --no-cache gfortran openblas-dev lapack-dev cython py3-pip py3-setuptools py3-wheel g++ linux-headers
