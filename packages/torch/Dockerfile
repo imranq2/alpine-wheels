@@ -4,7 +4,7 @@ ARG ALPINE_VERSION=3.20
 FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
 
 RUN apk add --no-cache git
-RUN git clone --recursive https://github.com/pytorch/pytorch
+RUN git clone --recursive --branch v${PYTHON_VERSION} https://github.com/pytorch/pytorch
 
 # Install common tools and dependencies
 RUN apk add --no-cache gfortran openblas-dev lapack-dev cython py3-pip py3-setuptools py3-wheel g++ linux-headers
