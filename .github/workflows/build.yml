@@ -28,6 +28,7 @@ on:
           - pymongo
           - sentence-transformers
           - nltk
+          - torch
       custom_package_name:
         description: 'Custom package name to build (if set, overrides package_name)'
         required: false
