@@ -44,6 +44,11 @@ nltk:
 	cd packages/default && \
 	docker buildx build --no-cache --progress=plain --platform linux/arm64 --build-arg PACKAGE_NAME=nltk --build-arg PACKAGE_VERSION=3.9.1 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
 
+.PHONY: python-crfsuite
+python-crfsuite:
+	cd packages/default && \
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 --build-arg PACKAGE_NAME=python-crfsuite --build-arg PACKAGE_VERSION=0.9.10 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
+
 .PHONY: gensim
 gensim:
 	cd packages/gensim && \
@@ -52,4 +57,4 @@ gensim:
 .PHONY: torch
 torch:
 	cd packages/torch && \
-	docker buildx build --progress=plain --platform linux/arm64 --build-arg PACKAGE_VERSION=2.3.1 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels,src=/wheels .
+	docker buildx build --progress=plain --platform linux/arm64 --build-arg PACKAGE_VERSION=2.4.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels,src=/wheels .
