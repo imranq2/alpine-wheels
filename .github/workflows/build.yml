@@ -66,7 +66,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Pull binfmt image
-        run: docker pull docker.io/tonistiigi/binfmt:latest
+        run: docker pull docker.io/tonistiigi/binfmt:qemu-v6.2.0
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
