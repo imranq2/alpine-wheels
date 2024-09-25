@@ -65,6 +65,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Pull binfmt image
+        run: docker pull docker.io/tonistiigi/binfmt:latest
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
