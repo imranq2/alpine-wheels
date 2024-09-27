@@ -1,12 +1,13 @@
 ARG PYTHON_VERSION=3.12
 ARG ALPINE_VERSION=3.20
-# Fix for getting same hash
-ARG SOURCE_DATE_EPOCH=1690000000
-ARG PYTHONHASHSEED=0
 
 FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
 
 # Set the environment variables based on the passed arguments
+# Fix for getting same hash
+ARG SOURCE_DATE_EPOCH=1690000000
+ARG PYTHONHASHSEED=0
+
 ENV SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH}
 ENV PYTHONHASHSEED=${PYTHONHASHSEED}
 
