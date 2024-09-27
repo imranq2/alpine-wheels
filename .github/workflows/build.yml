@@ -100,8 +100,8 @@ jobs:
           --build-arg PACKAGE_NAME=${{ env.PACKAGE_NAME }} \
           --build-arg PACKAGE_VERSION=${{ github.event.inputs.package_version }} \
           --build-arg PYTHON_VERSION=${{ github.event.inputs.python_version }} \
-          --build-arg SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH \
-          --build-arg PYTHONHASHSEED=$PYTHONHASHSEED \          
+          --build-arg SOURCE_DATE_EPOCH=${{ fromJSON(env.SOURCE_DATE_EPOCH) }} \
+          --build-arg PYTHONHASHSEED=${{ fromJSON(env.PYTHONHASHSEED) }} \          
           -f $DOCKERFILE_PATH \
           -t my-${{ env.PACKAGE_NAME }}-builder:latest \
           --output type=local,dest=./wheels_output .
@@ -133,8 +133,8 @@ jobs:
           --build-arg PACKAGE_NAME=${{ env.PACKAGE_NAME }} \
           --build-arg PACKAGE_VERSION=${{ github.event.inputs.package_version }} \
           --build-arg PYTHON_VERSION=${{ github.event.inputs.python_version }} \
-          --build-arg SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH \
-          --build-arg PYTHONHASHSEED=$PYTHONHASHSEED \
+          --build-arg SOURCE_DATE_EPOCH=${{ fromJSON(env.SOURCE_DATE_EPOCH) }} \
+          --build-arg PYTHONHASHSEED=${{ fromJSON(env.PYTHONHASHSEED) }} \          
           -f $DOCKERFILE_PATH \
           -t my-${{ env.PACKAGE_NAME }}-builder:latest \
           --output type=local,dest=./wheels_output .
