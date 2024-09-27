@@ -45,6 +45,9 @@ jobs:
     strategy:
       matrix:
         arch: [arm64, amd64]
+    env:
+      SOURCE_DATE_EPOCH: 1690000000  # Fixed timestamp for reproducibility
+      PYTHONHASHSEED: 0  # Ensure deterministic builds
     steps:
       - name: Print input values
         run: |
@@ -52,6 +55,8 @@ jobs:
           echo "Package Name: ${{ github.event.inputs.package_name }}"
           echo "Custom Package Name: ${{ github.event.inputs.custom_package_name }}"          
           echo "Package Version: ${{ github.event.inputs.package_version }}"
+          echo "SOURCE_DATE_EPOCH: $SOURCE_DATE_EPOCH"
+          echo "PYTHONHASHSEED: $PYTHONHASHSEED"
 
       - name: Determine Package Name
         id: package-name
@@ -80,10 +85,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Set build environment for reproducible builds
-        run: |
-          export SOURCE_DATE_EPOCH=1690000000  # Fixed Unix timestamp
-
       - name: Build Debian Package Wheel
         run: |
           PACKAGE_DOCKERFILE="packages/${{ env.PACKAGE_NAME }}/Dockerfile"
@@ -96,6 +97,8 @@ jobs:
           --build-arg PACKAGE_NAME=${{ env.PACKAGE_NAME }} \
           --build-arg PACKAGE_VERSION=${{ github.event.inputs.package_version }} \
           --build-arg PYTHON_VERSION=${{ github.event.inputs.python_version }} \
+          --build-arg SOURCE_DATE_EPOCH=${{ env.SOURCE_DATE_EPOCH }} \
+          --build-arg PYTHONHASHSEED=${{ env.PYTHONHASHSEED }} \          
           -f $DOCKERFILE_PATH \
           -t my-${{ env.PACKAGE_NAME }}-builder:latest \
           --output type=local,dest=./wheels_output .
@@ -127,6 +130,8 @@ jobs:
           --build-arg PACKAGE_NAME=${{ env.PACKAGE_NAME }} \
           --build-arg PACKAGE_VERSION=${{ github.event.inputs.package_version }} \
           --build-arg PYTHON_VERSION=${{ github.event.inputs.python_version }} \
+          --build-arg SOURCE_DATE_EPOCH=${{ env.SOURCE_DATE_EPOCH }} \
+          --build-arg PYTHONHASHSEED=${{ env.PYTHONHASHSEED }} \
           -f $DOCKERFILE_PATH \
           -t my-${{ env.PACKAGE_NAME }}-builder:latest \
           --output type=local,dest=./wheels_output .
