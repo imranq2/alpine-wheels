@@ -1,12 +1,11 @@
 ARG PYTHON_VERSION=3.12
-ARG DEBIAN_VERSION=bullseye
+ARG ALPINE_VERSION=3.20
 
-FROM python:${PYTHON_VERSION}-slim-${DEBIAN_VERSION}
+FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+
 
 # Install common tools and dependencies
-RUN apt-get update && apt-get install -y \
-    gfortran libopenblas-dev liblapack-dev cython python3-pip python3-setuptools python3-wheel g++ linux-headers \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache gfortran openblas-dev lapack-dev cython py3-pip py3-setuptools py3-wheel g++ linux-headers
 
 # Set environment variables for OpenBLAS
 ENV BLAS=/usr/lib/libopenblas.so

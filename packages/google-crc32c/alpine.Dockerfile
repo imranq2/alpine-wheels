@@ -1,12 +1,11 @@
 ARG PYTHON_VERSION=3.12
-ARG DEBIAN_VERSION=bullseye
+ARG ALPINE_VERSION=3.20
 
-FROM python:${PYTHON_VERSION}-slim-${DEBIAN_VERSION}
+FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
 
 # Install common tools and dependencies
-RUN apt-get update && apt-get install -y \
-    git build-essential gcc g++ python3-dev libffi-dev crc32c-dev patchelf make cmake cython \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache git build-base gcc g++ musl-dev python3-dev libffi-dev crc32c-dev patchelf make cmake cython
+
 
 # Set environment variables to force build with C extension
 ENV GOOGLE_CRC32C_BUILD_WITH_CYTHON=True
@@ -19,13 +18,14 @@ RUN pip wheel --verbose --no-cache-dir google-crc32c==$PACKAGE_VERSION -w dist_w
 
 RUN ls -haltR dist_wheels/
 
-# Install auditwheel
 RUN pip install auditwheel
 
-# Show and repair wheels using auditwheel
 RUN for whl in dist_wheels/*.whl; do auditwheel show "${whl}"; done
 
-RUN for whl in dist_wheels/*.whl; do auditwheel repair "${whl}" --wheel-dir wheels/
+RUN for whl in dist_wheels/*.whl; do auditwheel repair "${whl}" --wheel-dir wheels/; done
 
 # List the contents of the /wheels directory to verify the build
 RUN ls -l /wheels
+
+# Check the package, try and load the native library.
+#RUN pip install --no-index --find-links=/wheels google-crc32c==$PACKAGE_VERSION && python -c 'from google_crc32c import _crc32c; print("_crc32c: {}".format(_crc32c)); print("dir(_crc32c): {}".format(dir(_crc32c)))'
