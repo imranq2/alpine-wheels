@@ -92,7 +92,6 @@ jobs:
           else
             DOCKERFILE_PATH="packages/default/Dockerfile"
           fi
-
           docker buildx build --platform linux/${{ matrix.arch }} \
           --build-arg PACKAGE_NAME=${{ env.PACKAGE_NAME }} \
           --build-arg PACKAGE_VERSION=${{ github.event.inputs.package_version }} \
@@ -100,6 +99,21 @@ jobs:
           -f $DOCKERFILE_PATH \
           -t my-${{ env.PACKAGE_NAME }}-builder:latest \
           --output type=local,dest=./wheels_output .
+
+      - name: Hash Debian wheels
+        run: |
+          find ./wheels_output -name "*.whl" -exec sha256sum {} + > debian_wheels.sha256
+
+      - name: Persist wheels directory
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.arch }}-debian
+          path: ./wheels_output/wheels/*.whl  # Only upload wheel files
+          if-no-files-found: error
+
+      - name: recursively clean out the wheels_output directory
+        run: |
+          find ./wheels_output -type f -name "*.whl" -delete
 
       - name: Build Alpine Package Wheel
         run: |
@@ -109,11 +123,6 @@ jobs:
           else
             DOCKERFILE_PATH="packages/default/alpine.Dockerfile"
           fi
-
-      - name: Hash Debian wheels
-        run: |
-          find ./wheels_output -name "*.whl" -exec sha256sum {} + > debian_wheels.sha256
-
           docker buildx build --platform linux/${{ matrix.arch }} \
           --build-arg PACKAGE_NAME=${{ env.PACKAGE_NAME }} \
           --build-arg PACKAGE_VERSION=${{ github.event.inputs.package_version }} \
@@ -121,6 +130,13 @@ jobs:
           -f $DOCKERFILE_PATH \
           -t my-${{ env.PACKAGE_NAME }}-builder:latest \
           --output type=local,dest=./wheels_output .
+
+      - name: Persist wheels directory
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.arch }}-alpine
+          path: ./wheels_output/wheels/*.whl  # Only upload wheel files
+          if-no-files-found: error
 
       - name: Hash Alpine wheels
         run: |
@@ -130,7 +146,7 @@ jobs:
         run: |
           echo "Comparing wheel hashes..."
           echo "Debian wheels:" + cat debian_wheels.sha256
-            echo "Alpine wheels:" + cat alpine_wheels.sha256
+          echo "Alpine wheels:" + cat alpine_wheels.sha256
           if diff debian_wheels.sha256 alpine_wheels.sha256; then
             echo "Wheels are identical!"
           else
@@ -138,12 +154,6 @@ jobs:
             exit 1
           fi
 
-      - name: Persist wheels directory
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheels-${{ matrix.arch }}
-          path: ./wheels_output/wheels/*.whl  # Only upload wheel files
-          if-no-files-found: error
 
   upload-wheels:
     runs-on: ubuntu-latest
