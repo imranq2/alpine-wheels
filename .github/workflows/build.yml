@@ -80,6 +80,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Set build environment for reproducible builds
+        run: |
+          export SOURCE_DATE_EPOCH=$(date +%s)  # Use current timestamp or a fixed one
+
       - name: Build Debian Package Wheel
         run: |
           PACKAGE_DOCKERFILE="packages/${{ env.PACKAGE_NAME }}/Dockerfile"
@@ -106,6 +110,10 @@ jobs:
             DOCKERFILE_PATH="packages/default/alpine.Dockerfile"
           fi
 
+      - name: Hash Debian wheels
+        run: |
+          find ./wheels_output -name "*.whl" -exec sha256sum {} + > debian_wheels.sha256
+
           docker buildx build --platform linux/${{ matrix.arch }} \
           --build-arg PACKAGE_NAME=${{ env.PACKAGE_NAME }} \
           --build-arg PACKAGE_VERSION=${{ github.event.inputs.package_version }} \
@@ -113,6 +121,22 @@ jobs:
           -f $DOCKERFILE_PATH \
           -t my-${{ env.PACKAGE_NAME }}-builder:latest \
           --output type=local,dest=./wheels_output .
+
+      - name: Hash Alpine wheels
+        run: |
+          find ./wheels_output -name "*.whl" -exec sha256sum {} + > alpine_wheels.sha256
+
+      - name: Compare wheel hashes
+        run: |
+          echo "Comparing wheel hashes..."
+          echo "Debian wheels:" + cat debian_wheels.sha256
+            echo "Alpine wheels:" + cat alpine_wheels.sha256
+          if diff debian_wheels.sha256 alpine_wheels.sha256; then
+            echo "Wheels are identical!"
+          else
+            echo "Wheels differ!"
+            exit 1
+          fi
 
       - name: Persist wheels directory
         uses: actions/upload-artifact@v4
