@@ -80,13 +80,30 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Package Wheel
+      - name: Build Debian Package Wheel
         run: |
           PACKAGE_DOCKERFILE="packages/${{ env.PACKAGE_NAME }}/Dockerfile"
           if [ -f "$PACKAGE_DOCKERFILE" ]; then
             DOCKERFILE_PATH=$PACKAGE_DOCKERFILE
           else
             DOCKERFILE_PATH="packages/default/Dockerfile"
+          fi
+
+          docker buildx build --platform linux/${{ matrix.arch }} \
+          --build-arg PACKAGE_NAME=${{ env.PACKAGE_NAME }} \
+          --build-arg PACKAGE_VERSION=${{ github.event.inputs.package_version }} \
+          --build-arg PYTHON_VERSION=${{ github.event.inputs.python_version }} \
+          -f $DOCKERFILE_PATH \
+          -t my-${{ env.PACKAGE_NAME }}-builder:latest \
+          --output type=local,dest=./wheels_output .
+
+      - name: Build Alpine Package Wheel
+        run: |
+          PACKAGE_DOCKERFILE="packages/${{ env.PACKAGE_NAME }}/alpine.Dockerfile"
+          if [ -f "$PACKAGE_DOCKERFILE" ]; then
+            DOCKERFILE_PATH=$PACKAGE_DOCKERFILE
+          else
+            DOCKERFILE_PATH="packages/default/alpine.Dockerfile"
           fi
 
           docker buildx build --platform linux/${{ matrix.arch }} \

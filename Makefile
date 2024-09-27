@@ -58,3 +58,8 @@ gensim:
 torch:
 	cd packages/torch && \
 	docker buildx build --progress=plain --platform linux/arm64 --build-arg PACKAGE_VERSION=2.4.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels,src=/wheels .
+
+.PHONY: transformers
+transformers:
+	cd packages/default && \
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 --build-arg PACKAGE_NAME=transformers --build-arg PACKAGE_VERSION=4.45.1 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
