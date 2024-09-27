@@ -87,7 +87,7 @@ jobs:
 
       - name: Build Debian Package Wheel
         run: |
-          set -e
+          set -x
           echo "SOURCE_DATE_EPOCH: $SOURCE_DATE_EPOCH"
           echo "PYTHONHASHSEED: $PYTHONHASHSEED"
           PACKAGE_DOCKERFILE="packages/${{ env.PACKAGE_NAME }}/Dockerfile"
