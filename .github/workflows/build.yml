@@ -87,6 +87,9 @@ jobs:
 
       - name: Build Debian Package Wheel
         run: |
+          set -e
+          echo "SOURCE_DATE_EPOCH: $SOURCE_DATE_EPOCH"
+          echo "PYTHONHASHSEED: $PYTHONHASHSEED"
           PACKAGE_DOCKERFILE="packages/${{ env.PACKAGE_NAME }}/Dockerfile"
           if [ -f "$PACKAGE_DOCKERFILE" ]; then
             DOCKERFILE_PATH=$PACKAGE_DOCKERFILE
