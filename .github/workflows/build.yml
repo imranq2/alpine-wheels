@@ -108,7 +108,7 @@ jobs:
 
       - name: Hash Debian wheels
         run: |
-          find ./wheels_output -name "*.whl" -exec sha256sum {} + > debian_wheels.sha256
+          find ./wheels_output -name "${{ env.PACKAGE_NAME }}*.whl" -exec sha256sum {} + > debian_wheels.sha256
 
       - name: Persist wheels directory
         uses: actions/upload-artifact@v4
@@ -148,7 +148,7 @@ jobs:
 
       - name: Hash Alpine wheels
         run: |
-          find ./wheels_output -name "*.whl" -exec sha256sum {} + > alpine_wheels.sha256
+          find ./wheels_output -name "${{ env.PACKAGE_NAME }}*.whl" -exec sha256sum {} + > alpine_wheels.sha256
 
       - name: Compare wheel hashes
         run: |
