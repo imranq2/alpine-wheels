@@ -190,6 +190,7 @@ jobs:
 
       - name: Upload wheels to GitHub Pages
         run: |
+          set +x
           ls -haltR .
           mkdir -p docs/${{ env.PACKAGE_NAME }}
           mv -f wheels/* docs/${{ env.PACKAGE_NAME }}/
@@ -206,6 +207,7 @@ jobs:
 
       - name: Update index.html
         run: |
+          set +x
           cd docs/
           # Generate the root index.html
           echo "<html><body><ul>" > index.html
