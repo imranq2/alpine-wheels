@@ -11,7 +11,14 @@ ENV SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH}
 ENV PYTHONHASHSEED=${PYTHONHASHSEED}
 
 # Install common tools and dependencies
-RUN apk add --no-cache git build-base gcc musl-dev python3-dev libffi-dev
+RUN apk add --no-cache \
+    build-base \
+    musl-dev \
+    python3-dev \
+    libffi-dev \
+    libtool \
+    autoconf \
+    automake
 
 # Build wheels for the specified version
 ARG PACKAGE_NAME
