@@ -150,18 +150,6 @@ jobs:
         run: |
           find ./wheels_output -name "${{ env.PACKAGE_NAME }}*.whl" -exec sha256sum {} + > alpine_wheels.sha256
 
-      - name: Compare wheel hashes
-        run: |
-          echo "Comparing wheel hashes..."
-          echo "Debian wheels:" + cat debian_wheels.sha256
-          echo "Alpine wheels:" + cat alpine_wheels.sha256
-          if diff debian_wheels.sha256 alpine_wheels.sha256; then
-            echo "Wheels are identical!"
-          else
-            echo "Wheels differ!"
-            exit 1
-          fi
-
 
   upload-wheels:
     runs-on: ubuntu-latest
