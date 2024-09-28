@@ -187,7 +187,11 @@ jobs:
           git add docs/
           git commit -m "Add wheels for ${{ env.PACKAGE_NAME }} ${{ github.event.inputs.package_version }}"
           git pull --rebase origin main  # Pull the latest changes and rebase
-          git push
+          if [ "$(git diff --stat origin/main)" != "" ]; then
+            git push
+          else
+            echo "No changes to push"
+          fi
 
       - name: Update index.html
         run: |
@@ -212,4 +216,8 @@ jobs:
       
           git add index.html */index.html
           git commit -m "Update package index files"
-          git push
+          if [ "$(git diff --stat origin/main)" != "" ]; then
+            git push
+          else
+            echo "No changes to push"
+          fi
