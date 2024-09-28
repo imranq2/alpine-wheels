@@ -239,9 +239,11 @@ jobs:
           echo "</ul></body></html>" >> index.html
       
           git add index.html */index.html
-          git commit -m "Update package index files"
-          if [ "$(git diff --stat origin/main)" != "" ]; then
+
+          # Check if there are any changes before committing
+          if ! git diff --cached --quiet; then
+            git commit -m "Update package index files"
             git push
           else
-            echo "No changes to push"
+            echo "No changes to commit"
           fi
