@@ -5,7 +5,7 @@ FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSI
 
 
 # Install common tools and dependencies
-RUN apk add --no-cache git build-base make gcc geos-dev musl-dev
+RUN apk add --no-cache git build-base make geos-dev musl-dev
 
 # Build wheels for the specified version of Scipy
 ARG PACKAGE_VERSION

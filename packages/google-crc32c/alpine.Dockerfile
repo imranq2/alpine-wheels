@@ -4,7 +4,7 @@ ARG ALPINE_VERSION=3.20
 FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
 
 # Install common tools and dependencies
-RUN apk add --no-cache git build-base gcc g++ musl-dev python3-dev libffi-dev crc32c-dev patchelf make cmake cython
+RUN apk add --no-cache git build-base musl-dev python3-dev libffi-dev crc32c-dev patchelf make cmake cython
 
 
 # Set environment variables to force build with C extension

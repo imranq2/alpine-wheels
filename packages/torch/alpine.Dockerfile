@@ -11,13 +11,13 @@ RUN echo "Building wheels for PyTorch version ${PACKAGE_VERSION}"
 RUN git clone --recursive --branch v${PACKAGE_VERSION} https://github.com/pytorch/pytorch
 
 # Install common tools and dependencies
-RUN apk add --no-cache gfortran openblas-dev lapack-dev cython py3-pip py3-setuptools py3-wheel g++ linux-headers
-RUN apk add --no-cache git cmake make gcc g++ python3-dev py3-pip cython
+RUN apk add --no-cache gfortran openblas-dev lapack-dev cython py3-pip py3-setuptools py3-wheel linux-headers
+RUN apk add --no-cache git cmake make build-base musl-dev python3-dev py3-pip cython
 RUN apk add --no-cache openblas-dev lapack-dev
 RUN pip install setuptools wheel pyyaml cython typing_extensions
-RUN apk add --no-cache gfortran openblas-dev lapack-dev cython py3-pip py3-setuptools py3-wheel g++ linux-headers
+RUN apk add --no-cache gfortran openblas-dev lapack-dev cython py3-pip py3-setuptools py3-wheel linux-headers
 RUN #pip install mkl-static mkl-include
-RUN apk add --no-cache cmake make gcc g++ libffi-dev openssl-dev zlib-dev
+RUN apk add --no-cache cmake make build-base musl-dev libffi-dev openssl-dev zlib-dev
 
 
 # Set environment variables for OpenBLAS
