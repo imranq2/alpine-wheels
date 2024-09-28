@@ -177,12 +177,23 @@ jobs:
           merge-multiple: true
           path: ./wheels
 
-      - name: Unpack the wheels
-        run: |
-          pip install wheel
-          for file in ./wheels/*.whl; do
-            wheel unpack "$file"
-          done
+#      - name: Unpack the wheels
+#        run: |
+#          pip install wheel
+#          for file in ./wheels/*.whl; do
+#            wheel unpack "$file"
+#          done
+#          for file in ./wheels/*.whl; do
+#            echo "Contents of $file:"
+#            unzip -l "$file"
+#            unzip -d "${file%.whl}" "$file"
+#            echo "Unpacked contents:"
+#            ls -R "${file%.whl}"
+#            echo "-----------------------------"
+#          done
+#          # Delete the unpacked folder
+#          rm -rf "${file%.whl}"
+
 
       - name: Install Git LFS
         run: |
