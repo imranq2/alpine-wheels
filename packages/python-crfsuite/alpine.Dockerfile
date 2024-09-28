@@ -11,7 +11,7 @@ ENV SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH}
 ENV PYTHONHASHSEED=${PYTHONHASHSEED}
 
 # Install build tools and dependencies required for python-crfsuite
-RUN apk add --no-cache git build-base gcc musl-dev python3-dev libffi-dev libtool autoconf automake
+RUN apk add --no-cache git build-base gcc g++ musl-dev python3-dev libffi-dev crc32c-dev patchelf make cmake cython
 
 
 # Additional dependency needed for linking C++ code in pycrfsuite
