@@ -8,6 +8,7 @@ FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSI
 RUN apk add --no-cache git build-base make geos-dev musl-dev
 
 # Build wheels for the specified version of Scipy
+ARG PACKAGE_NAME
 ARG PACKAGE_VERSION
 RUN pip install --verbose --no-binary ${PACKAGE_NAME} ${PACKAGE_NAME}==${PACKAGE_VERSION}
 RUN pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} --no-binary ${PACKAGE_NAME} --no-deps -w /wheels

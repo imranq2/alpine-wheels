@@ -12,6 +12,7 @@ RUN echo "https://mirror.leaseweb.com/alpine/edge/community" >> /etc/apk/reposit
     && apk add --no-cache build-base musl-dev python3-dev libffi-dev openssl-dev make
 
 # Build wheels for the specified version
+ARG PACKAGE_NAME
 ARG PACKAGE_VERSION
 RUN pip install --verbose --no-binary ${PACKAGE_NAME} ${PACKAGE_NAME}==${PACKAGE_VERSION}
 RUN pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} --no-binary ${PACKAGE_NAME} --no-deps -w /wheels

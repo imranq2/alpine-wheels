@@ -8,14 +8,14 @@ numpy:
 .PHONY: scipy
 scipy:
 	cd packages/scipy && \
-	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_VERSION=1.13.1 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
-	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_VERSION=1.13.1 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=scipy --build-arg PACKAGE_VERSION=1.13.1 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=scipy --build-arg PACKAGE_VERSION=1.13.1 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
 
 .PHONY: shapely
 shapely:
 	cd packages/shapely && \
-	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_VERSION=2.0.6 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
-	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_VERSION=2.0.6 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=shapely --build-arg PACKAGE_VERSION=2.0.6 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=shapely --build-arg PACKAGE_VERSION=2.0.6 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
 
 .PHONY: google-crc32c
 google-crc32c:
@@ -26,8 +26,8 @@ google-crc32c:
 .PHONY: grpcio
 grpcio:
 	cd packages/grpcio && \
-	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_VERSION=1.66.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
-	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_VERSION=1.66.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=grpcio --build-arg PACKAGE_VERSION=1.66.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=grpcio --build-arg PACKAGE_VERSION=1.66.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
 
 .PHONY: fastapi
 fastapi:
@@ -61,14 +61,14 @@ python-crfsuite:
 .PHONY: gensim
 gensim:
 	cd packages/gensim && \
-	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_VERSION=4.3.3 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
-	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_VERSION=4.3.3 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=gensim --build-arg PACKAGE_VERSION=4.3.3 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=gensim --build-arg PACKAGE_VERSION=4.3.3 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
 
 .PHONY: torch
 torch:
 	cd packages/torch && \
-	docker buildx build --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_VERSION=2.4.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels,src=/wheels . && \
-	docker buildx build --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_VERSION=2.4.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels,src=/wheels .
+	docker buildx build --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=torch --build-arg PACKAGE_VERSION=2.4.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels,src=/wheels . && \
+	docker buildx build --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=torch --build-arg PACKAGE_VERSION=2.4.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels,src=/wheels .
 
 .PHONY: transformers
 transformers:

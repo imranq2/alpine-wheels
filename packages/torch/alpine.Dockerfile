@@ -3,6 +3,7 @@ ARG ALPINE_VERSION=3.20
 
 FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
 # Build wheels for the specified version
+ARG PACKAGE_NAME
 ARG PACKAGE_VERSION
 
 RUN apk add --no-cache git
