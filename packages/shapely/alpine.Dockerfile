@@ -9,7 +9,8 @@ RUN apk add --no-cache git build-base make geos-dev musl-dev
 
 # Build wheels for the specified version of Scipy
 ARG PACKAGE_VERSION
-RUN pip wheel --verbose --no-cache-dir shapely==$PACKAGE_VERSION --no-deps -w /wheels
+RUN pip install --verbose --no-binary ${PACKAGE_NAME} ${PACKAGE_NAME}==${PACKAGE_VERSION}
+RUN pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} --no-binary ${PACKAGE_NAME} --no-deps -w /wheels
 
 # List the contents of the /wheels directory to verify the build
 RUN ls -l /wheels

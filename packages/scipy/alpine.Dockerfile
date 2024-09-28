@@ -5,7 +5,7 @@ FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSI
 
 
 # Install common tools and dependencies
-RUN apk add --no-cache gfortran openblas-dev lapack-dev cython py3-pip py3-setuptools py3-wheel linux-headers
+RUN apk add --no-cache build-base make musl-dev gfortran openblas-dev lapack-dev cython py3-pip py3-setuptools py3-wheel linux-headers
 
 # Set environment variables for OpenBLAS
 ENV BLAS=/usr/lib/libopenblas.so
@@ -14,7 +14,8 @@ ENV LAPACK=/usr/lib/libopenblas.so
 
 # Build wheels for the specified version of Scipy
 ARG PACKAGE_VERSION
-RUN pip wheel --verbose --no-cache-dir scipy==$PACKAGE_VERSION --no-deps -w /wheels --extra-index-url https://alpine-wheels.github.io/index
+RUN pip install --verbose --no-binary ${PACKAGE_NAME} ${PACKAGE_NAME}==${PACKAGE_VERSION}
+RUN pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} --no-binary ${PACKAGE_NAME} --no-deps -w /wheels
 
 # List the contents of the /wheels directory to verify the build
 RUN ls -l /wheels
