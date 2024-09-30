@@ -1,14 +1,14 @@
 .PHONY: numpy
 numpy:
 	cd packages/numpy && \
-	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_VERSION=1.26.4 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
-	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_VERSION=1.26.4 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
-	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_VERSION=1.26.4 --build-arg PYTHON_VERSION=3.10 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=numpy --build-arg PACKAGE_VERSION=1.26.4 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=numpy --build-arg PACKAGE_VERSION=1.26.4 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=numpy --build-arg PACKAGE_VERSION=1.26.4 --build-arg PYTHON_VERSION=3.10 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
 
 .PHONY: scipy
 scipy:
 	cd packages/scipy && \
-	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=scipy --build-arg PACKAGE_VERSION=1.13.1 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=scipy --build-arg PACKAGE_VERSION=1.13.1 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
 
 .PHONY: shapely
 shapely:
@@ -19,8 +19,8 @@ shapely:
 .PHONY: google-crc32c
 google-crc32c:
 	cd packages/google-crc32c && \
-	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_VERSION=1.5.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
-	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_VERSION=1.5.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=google-crc32c --build-arg PACKAGE_VERSION=1.5.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=google-crc32c --build-arg PACKAGE_VERSION=1.5.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
 
 .PHONY: grpcio
 grpcio:

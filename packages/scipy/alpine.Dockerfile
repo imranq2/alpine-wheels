@@ -15,7 +15,17 @@ ENV LAPACK=/usr/lib/libopenblas.so
 # Build wheels for the specified version of Scipy
 ARG PACKAGE_NAME
 ARG PACKAGE_VERSION
-RUN pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} --no-binary ${PACKAGE_NAME} --no-deps -w /wheels
+RUN pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} --no-binary ${PACKAGE_NAME} --no-deps -w dist_wheels/
+
+RUN ls -haltR dist_wheels/
+
+RUN apk add --no-cache patchelf
+
+RUN pip install auditwheel
+
+RUN for whl in dist_wheels/*.whl; do auditwheel show "${whl}"; done
+
+RUN for whl in dist_wheels/*.whl; do auditwheel repair "${whl}" --wheel-dir wheels/; done
 
 # List the contents of the /wheels directory to verify the build
 RUN ls -l /wheels
