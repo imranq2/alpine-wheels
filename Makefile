@@ -57,11 +57,11 @@ python-crfsuite:
 	cd packages/python-crfsuite && \
 	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=python-crfsuite --build-arg PACKAGE_VERSION=0.9.10 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
 
-.PHONY: gensim
-gensim:
-	cd packages/gensim && \
-	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=gensim --build-arg PACKAGE_VERSION=4.3.3 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
-	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=gensim --build-arg PACKAGE_VERSION=4.3.3 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
+#.PHONY: gensim
+#gensim:
+#	cd packages/default && \
+#	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=gensim --build-arg PACKAGE_VERSION=4.3.3 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
+#	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=gensim --build-arg PACKAGE_VERSION=4.3.3 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
 
 .PHONY: torch
 torch:
