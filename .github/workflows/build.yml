@@ -30,6 +30,7 @@ on:
           - nltk
           - torch
           - python-crfsuite
+          - regex
       custom_package_name:
         description: 'Custom package name to build (if set, overrides package_name)'
         required: false

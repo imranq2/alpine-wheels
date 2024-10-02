@@ -74,3 +74,9 @@ transformers:
 	cd packages/default && \
 	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=transformers --build-arg PACKAGE_VERSION=4.45.1 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
 	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=transformers --build-arg PACKAGE_VERSION=4.45.1 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
+
+.PHONY: regex
+regex:
+	cd packages/default && \
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=regex --build-arg PACKAGE_VERSION=2024.9.11 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=regex --build-arg PACKAGE_VERSION=2024.9.11 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
