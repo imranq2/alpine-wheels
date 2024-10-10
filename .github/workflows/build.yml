@@ -31,6 +31,7 @@ on:
           - torch
           - python-crfsuite
           - regex
+          - biotite
       custom_package_name:
         description: 'Custom package name to build (if set, overrides package_name)'
         required: false
@@ -42,10 +43,11 @@ on:
 jobs:
   build-wheels:
     runs-on: ubuntu-latest
-    name: ${{ matrix.arch }} ${{ github.event.inputs.package_name }} ${{ github.event.inputs.package_version }} on Python ${{ github.event.inputs.python_version }}
+    name: ${{ matrix.platform }} ${{ matrix.arch }} ${{ github.event.inputs.package_name }} ${{ github.event.inputs.package_version }} on Python ${{ github.event.inputs.python_version }}
     strategy:
       matrix:
         arch: [arm64, amd64]
+        platform: [debian, alpine]
     env:
       SOURCE_DATE_EPOCH: 1690000000  # Fixed timestamp for reproducibility
       PYTHONHASHSEED: 0  # Ensure deterministic builds
@@ -86,49 +88,18 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-#      - name: Build Debian Package Wheel
-#        run: |
-#          set -x
-#          echo "SOURCE_DATE_EPOCH: $SOURCE_DATE_EPOCH"
-#          echo "PYTHONHASHSEED: $PYTHONHASHSEED"
-#          PACKAGE_DOCKERFILE="packages/${{ env.PACKAGE_NAME }}/Dockerfile"
-#          if [ -f "$PACKAGE_DOCKERFILE" ]; then
-#            DOCKERFILE_PATH=$PACKAGE_DOCKERFILE
-#          else
-#            DOCKERFILE_PATH="packages/default/Dockerfile"
-#          fi
-#          docker buildx build --platform linux/${{ matrix.arch }} \
-#          --build-arg PACKAGE_NAME=${{ env.PACKAGE_NAME }} \
-#          --build-arg PACKAGE_VERSION=${{ github.event.inputs.package_version }} \
-#          --build-arg PYTHON_VERSION=${{ github.event.inputs.python_version }} \
-#          --build-arg SOURCE_DATE_EPOCH=${{ fromJSON(env.SOURCE_DATE_EPOCH) }} \
-#          --build-arg PYTHONHASHSEED=${{ fromJSON(env.PYTHONHASHSEED) }} \
-#          -f $DOCKERFILE_PATH \
-#          -t my-${{ env.PACKAGE_NAME }}-builder:latest \
-#          --output type=local,dest=./wheels_output .
-#
-#      - name: Hash Debian wheels
-#        run: |
-#          find ./wheels_output -name "${{ env.PACKAGE_NAME }}*.whl" -exec sha256sum {} + > debian_wheels.sha256
-#
-#      - name: Persist wheels directory
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: wheels-${{ matrix.arch }}-debian
-#          path: ./wheels_output/wheels/*.whl  # Only upload wheel files
-#          if-no-files-found: error
-#
-#      - name: recursively clean out the wheels_output directory
-#        run: |
-#          find ./wheels_output -type f -name "*.whl" -delete
-#
-      - name: Build Alpine Package Wheel
+      - name: Build Package Wheel
         run: |
-          PACKAGE_DOCKERFILE="packages/${{ env.PACKAGE_NAME }}/alpine.Dockerfile"
-          if [ -f "$PACKAGE_DOCKERFILE" ]; then
-            DOCKERFILE_PATH=$PACKAGE_DOCKERFILE
+          if [ "${{ matrix.platform }}" = "alpine" ]; then
+            PACKAGE_DOCKERFILE="packages/${{ env.PACKAGE_NAME }}/alpine.Dockerfile"
+            if [ ! -f "$PACKAGE_DOCKERFILE" ]; then
+              PACKAGE_DOCKERFILE="packages/default/alpine.Dockerfile"
+            fi
           else
-            DOCKERFILE_PATH="packages/default/alpine.Dockerfile"
+            PACKAGE_DOCKERFILE="packages/${{ env.PACKAGE_NAME }}/Dockerfile"
+            if [ ! -f "$PACKAGE_DOCKERFILE" ]; then
+              PACKAGE_DOCKERFILE="packages/default/Dockerfile"
+            fi
           fi
           docker buildx build --platform linux/${{ matrix.arch }} \
           --build-arg PACKAGE_NAME=${{ env.PACKAGE_NAME }} \
@@ -136,7 +107,7 @@ jobs:
           --build-arg PYTHON_VERSION=${{ github.event.inputs.python_version }} \
           --build-arg SOURCE_DATE_EPOCH=${{ fromJSON(env.SOURCE_DATE_EPOCH) }} \
           --build-arg PYTHONHASHSEED=${{ fromJSON(env.PYTHONHASHSEED) }} \
-          -f $DOCKERFILE_PATH \
+          -f $PACKAGE_DOCKERFILE \
           -t my-${{ env.PACKAGE_NAME }}-builder:latest \
           --output type=local,dest=./wheels_output .
 

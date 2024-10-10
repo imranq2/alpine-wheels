@@ -12,7 +12,7 @@ ENV PYTHONHASHSEED=${PYTHONHASHSEED}
 
 # Install common tools and dependencies
 RUN apt-get update && apt-get install -y \
-    git build-essential gcc libffi-dev python3-dev \
+    git build-essential gcc g++ libffi-dev python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Build wheels for the specified version
