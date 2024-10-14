@@ -12,8 +12,14 @@ ENV PYTHONHASHSEED=${PYTHONHASHSEED}
 
 # Install common tools and dependencies
 RUN apt-get update && apt-get install -y \
-    git build-essential gcc g++ libffi-dev python3-dev \
+    git build-essential gcc g++ libffi-dev python3-dev curl \
     && rm -rf /var/lib/apt/lists/*
+
+# Download and install rustup (Rust installer)
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+
+# Ensure rust binaries are in the PATH
+ENV PATH="/root/.cargo/bin:${PATH}"
 
 # Build wheels for the specified version
 ARG PACKAGE_NAME
