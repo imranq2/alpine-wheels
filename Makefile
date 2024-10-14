@@ -86,3 +86,8 @@ biotite:
 	cd packages/default && \
 	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=biotite --build-arg PACKAGE_VERSION=0.41.2 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
 	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=biotite --build-arg PACKAGE_VERSION=0.41.2 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
+
+.PHONY: tiktoken
+tiktoken:
+	cd packages/tiktoken && \
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=tiktoken --build-arg PACKAGE_VERSION=0.8.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
