@@ -64,10 +64,16 @@ RUN sed -i 's/unsigned int line/int line/' pytorch/c10/macros/Macros.h
 
 # RUN cd pytorch && python3 setup.py build
 
-RUN cd pytorch && python3 setup.py bdist_wheel --dist-dir /wheels
+RUN cd pytorch && python3 setup.py bdist_wheel --dist-dir /tmp/wheels_temp
 
 # List the contents of the /wheels directory to verify the build
+RUN ls -l /tmp/wheels_temp
+
+# https://github.com/jvolkman/repairwheel
+RUN repairwheel /tmp/wheels_temp/*.whl -o /wheels
+
 RUN ls -l /wheels
+
 
 FROM alpine:3.20.3
 
