@@ -1,7 +1,7 @@
 ARG PYTHON_VERSION=3.12
 ARG ALPINE_VERSION=3.20
 
-FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS builder
 # Build wheels for the specified version
 ARG PACKAGE_NAME
 ARG PACKAGE_VERSION
@@ -68,3 +68,7 @@ RUN cd pytorch && python3 setup.py bdist_wheel --dist-dir /wheels
 
 # List the contents of the /wheels directory to verify the build
 RUN ls -l /wheels
+
+FROM alpine:3.20.3
+
+COPY --from=builder /wheels /wheels

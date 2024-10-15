@@ -1,7 +1,7 @@
 ARG PYTHON_VERSION=3.12
 ARG ALPINE_VERSION=3.20
 
-FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS builder
 
 # Install common tools and dependencies
 RUN apk add --no-cache git build-base musl-dev python3-dev libffi-dev crc32c-dev patchelf make cmake cython
@@ -30,3 +30,7 @@ RUN ls -l /wheels
 
 # Check the package, try and load the native library.
 #RUN pip install --no-index --find-links=/wheels google-crc32c==$PACKAGE_VERSION && python -c 'from google_crc32c import _crc32c; print("_crc32c: {}".format(_crc32c)); print("dir(_crc32c): {}".format(dir(_crc32c)))'
+
+FROM alpine:3.20.3
+
+COPY --from=builder /wheels /wheels

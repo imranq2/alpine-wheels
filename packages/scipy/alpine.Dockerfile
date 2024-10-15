@@ -1,7 +1,7 @@
 ARG PYTHON_VERSION=3.12
 ARG ALPINE_VERSION=3.20
 
-FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS builder
 
 
 # Install common tools and dependencies
@@ -29,3 +29,7 @@ RUN for whl in dist_wheels/*.whl; do auditwheel repair "${whl}" --wheel-dir whee
 
 # List the contents of the /wheels directory to verify the build
 RUN ls -l /wheels
+
+FROM alpine:3.20.3
+
+COPY --from=builder /wheels /wheels

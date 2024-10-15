@@ -1,7 +1,7 @@
 ARG PYTHON_VERSION=3.12
 ARG DEBIAN_VERSION=bookworm
 
-FROM python:${PYTHON_VERSION}-slim-${DEBIAN_VERSION}
+FROM python:${PYTHON_VERSION}-slim-${DEBIAN_VERSION} AS builder
 
 # Build wheels for the specified version
 ARG PACKAGE_NAME
@@ -10,3 +10,7 @@ RUN pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} --no-
 
 # List the contents of the /wheels directory to verify the build
 RUN ls -l /wheels
+
+FROM alpine:3.20.3
+
+COPY --from=builder /wheels /wheels
