@@ -114,7 +114,9 @@ RUN cd /arrow/python && python3 setup.py bdist_wheel --dist-dir /tmp/wheels_temp
 RUN ls -l /tmp/wheels_temp
 
 # https://github.com/jvolkman/repairwheel
-RUN repairwheel /tmp/wheels_temp/*.whl -o /wheels
+#RUN repairwheel /tmp/wheels_temp/*.whl -o /wheels
+
+RUN mkdir -p /wheels && cp /tmp/wheels_temp/*.whl /wheels/
 
 RUN ls -l /wheels
 
