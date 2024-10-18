@@ -115,6 +115,8 @@ RUN mkdir -p /wheels && cp /tmp/wheels_temp/*.whl /wheels/
 
 RUN ls -l /wheels
 
+RUN auditwheel show /wheels/pyarrow-0.0.0-cp312-cp312-linux_aarch64.whl
+
 
 FROM alpine:3.20.3
 
