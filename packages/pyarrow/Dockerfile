@@ -29,6 +29,8 @@ ARG ARROW_BUILD_TYPE=release
 
 ENV ARROW_HOME=/usr/local \
     PARQUET_HOME=/usr/local \
+    ARROW_PARQUET=1 \
+    ARROW_ORC=1 \
     PYARROW_PARALLEL=4
 
 RUN mkdir /arrow \

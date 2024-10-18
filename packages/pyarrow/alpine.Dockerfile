@@ -62,12 +62,16 @@ ARG ARROW_BUILD_TYPE=release
 ENV ARROW_HOME=/usr/local \
     PARQUET_HOME=/usr/local \
     ARROW_PARQUET=1 \
-    ARROW_ORC=1
+    ARROW_ORC=1 \
+    PYARROW_PARALLEL=4
 
 RUN mkdir /arrow \
     && wget -q https://github.com/apache/arrow/archive/apache-arrow-${PACKAGE_VERSION}.tar.gz -O /tmp/apache-arrow.tar.gz \
     && echo "${ARROW_SHA256} *apache-arrow.tar.gz" | sha256sum /tmp/apache-arrow.tar.gz \
     && tar -xvf /tmp/apache-arrow.tar.gz -C /arrow --strip-components 1
+
+# https://arrow.apache.org/docs/developers/guide/step_by_step/building.html
+# https://arrow.apache.org/docs/developers/cpp/building.html#cpp-building-building
 
 # Create the patch file for re2
 RUN echo "diff --git a/util/pcre.h b/util/pcre.h" > /arrow/re2_patch.diff \
