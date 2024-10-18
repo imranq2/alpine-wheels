@@ -63,7 +63,8 @@ ENV ARROW_HOME=/usr/local \
     PARQUET_HOME=/usr/local \
     ARROW_PARQUET=1 \
     ARROW_ORC=1 \
-    PYARROW_PARALLEL=4
+    PYARROW_PARALLEL=4 \
+    ARROW_VERSION=${PACKAGE_VERSION}
 
 RUN mkdir /arrow \
     && wget -q https://github.com/apache/arrow/archive/apache-arrow-${PACKAGE_VERSION}.tar.gz -O /tmp/apache-arrow.tar.gz \
