@@ -95,7 +95,5 @@ tiktoken:
 
 .PHONY: pyarrow
 pyarrow:
-	docker builder prune -a -f && \
-	docker system prune -f && \
 	cd packages/pyarrow && \
 	docker buildx build --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=pyarrow --build-arg PACKAGE_VERSION=17.0.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .

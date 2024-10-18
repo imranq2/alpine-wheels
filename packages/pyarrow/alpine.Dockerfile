@@ -2,6 +2,9 @@ ARG PYTHON_VERSION=3.12
 ARG ALPINE_VERSION=3.20
 
 FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS builder
+# Build wheels for the specified version
+ARG PACKAGE_NAME
+ARG PACKAGE_VERSION
 
 # Fix for getting same hash
 ARG SOURCE_DATE_EPOCH=1690000000
@@ -53,7 +56,6 @@ RUN apk update && apk add --no-cache \
     git \
     && pip install --upgrade pip && pip install pipenv cython numpy
 
-ARG ARROW_VERSION=17.0.0
 ARG ARROW_SHA256=8379554d89f19f2c8db63620721cabade62541f47a4e706dfb0a401f05a713ef
 ARG ARROW_BUILD_TYPE=release
 
@@ -61,7 +63,7 @@ ENV ARROW_HOME=/usr/local \
     PARQUET_HOME=/usr/local
 
 RUN mkdir /arrow \
-    && wget -q https://github.com/apache/arrow/archive/apache-arrow-${ARROW_VERSION}.tar.gz -O /tmp/apache-arrow.tar.gz \
+    && wget -q https://github.com/apache/arrow/archive/apache-arrow-${PACKAGE_VERSION}.tar.gz -O /tmp/apache-arrow.tar.gz \
     && echo "${ARROW_SHA256} *apache-arrow.tar.gz" | sha256sum /tmp/apache-arrow.tar.gz \
     && tar -xvf /tmp/apache-arrow.tar.gz -C /arrow --strip-components 1
 
@@ -96,14 +98,7 @@ RUN cd /arrow/cpp \
 RUN ls -haltR /arrow
 
 # Update pip
-RUN pip install --upgrade pip
-
-# Install repairwheel
-RUN pip install repairwheel
-
-# Build wheels for the specified version
-ARG PACKAGE_NAME
-ARG PACKAGE_VERSION
+RUN pip install --upgrade pip && pip install repairwheel wheel auditwheel
 
 # Build pyarrow wheel
 RUN cd /arrow/python && python3 setup.py bdist_wheel --dist-dir /tmp/wheels_temp
@@ -113,10 +108,10 @@ RUN cd /arrow/python && python3 setup.py bdist_wheel --dist-dir /tmp/wheels_temp
 # List the contents of the /wheels directory to verify the build
 RUN ls -l /tmp/wheels_temp
 
-# https://github.com/jvolkman/repairwheel
-#RUN repairwheel /tmp/wheels_temp/*.whl -o /wheels
-
 RUN mkdir -p /wheels && cp /tmp/wheels_temp/*.whl /wheels/
+
+# https://github.com/jvolkman/repairwheel
+# RUN repairwheel /tmp/wheels_temp/*.whl -o /wheels
 
 RUN ls -l /wheels
 
