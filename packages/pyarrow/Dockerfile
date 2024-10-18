@@ -28,7 +28,8 @@ ARG ARROW_SHA256=8379554d89f19f2c8db63620721cabade62541f47a4e706dfb0a401f05a713e
 ARG ARROW_BUILD_TYPE=release
 
 ENV ARROW_HOME=/usr/local \
-    PARQUET_HOME=/usr/local
+    PARQUET_HOME=/usr/local \
+    PYARROW_PARALLEL=4
 
 RUN mkdir /arrow \
     && wget -q https://github.com/apache/arrow/archive/apache-arrow-${PACKAGE_VERSION}.tar.gz -O /tmp/apache-arrow.tar.gz \
@@ -66,10 +67,10 @@ RUN cd /arrow/cpp \
 RUN ls -haltR /arrow
 
 # Update pip
-RUN pip install --upgrade pip && pip install repairwheel wheel auditwheel
+RUN pip install --upgrade pip && pip install repairwheel wheel auditwheel setuptools Cython numpy
 
 # Build pyarrow wheel
-RUN cd /arrow/python && python3 setup.py bdist_wheel --dist-dir /tmp/wheels_temp
+RUN cd /arrow/python && python3 setup.py build_ext bdist_wheel --dist-dir /tmp/wheels_temp
 
 # RUN pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} --no-binary ${PACKAGE_NAME} --no-deps -w /tmp/wheels_temp
 
@@ -83,7 +84,7 @@ RUN mkdir -p /wheels && cp /tmp/wheels_temp/*.whl /wheels/
 
 RUN ls -l /wheels
 
-RUN auditwheel show /wheels/pyarrow-0.0.0-cp312-cp312-linux_aarch64.whl
+RUN auditwheel show /wheels/*.whl
 
 
 FROM alpine:3.20.3
