@@ -1,7 +1,7 @@
 ARG PYTHON_VERSION=3.12
 ARG ALPINE_VERSION=3.20
 
-FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS builder
+FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
 # Build wheels for the specified version
 ARG PACKAGE_NAME
 ARG PACKAGE_VERSION
@@ -21,8 +21,6 @@ ENV PYTHONFAULTHANDLER=1
 ENV ACCEPT_EULA=Y
 
 RUN apk update && apk add --no-cache \
-    gcc \
-    g++ \
     curl \
     unixodbc-dev \
     bash \
@@ -64,12 +62,12 @@ ENV ARROW_HOME=/usr/local \
     ARROW_PARQUET=1 \
     ARROW_ORC=1 \
     PYARROW_PARALLEL=4 \
-    ARROW_VERSION=${PACKAGE_VERSION}
+    ARROW_VERSION=${PACKAGE_VERSION} \
+    VERSION=${PACKAGE_VERSION}
 
 RUN mkdir /arrow \
-    && wget -q https://github.com/apache/arrow/archive/apache-arrow-${PACKAGE_VERSION}.tar.gz -O /tmp/apache-arrow.tar.gz \
-    && echo "${ARROW_SHA256} *apache-arrow.tar.gz" | sha256sum /tmp/apache-arrow.tar.gz \
-    && tar -xvf /tmp/apache-arrow.tar.gz -C /arrow --strip-components 1
+    && git clone --branch apache-arrow-${PACKAGE_VERSION} https://github.com/apache/arrow.git /arrow && \
+    cd /arrow && git checkout apache-arrow-${PACKAGE_VERSION}
 
 # https://arrow.apache.org/docs/developers/guide/step_by_step/building.html
 # https://arrow.apache.org/docs/developers/cpp/building.html#cpp-building-building
@@ -104,27 +102,42 @@ RUN cd /arrow/cpp \
 
 RUN ls -haltR /arrow
 
+# RUN echo 'version="17.0.0";version_tuple=(17,0,0);' > /arrow/python/pyarrow/_generated_version.py
+
 # Update pip
-RUN pip install --upgrade pip && pip install repairwheel wheel auditwheel Cython numpy
+RUN pip install --upgrade pip && pip install repairwheel wheel auditwheel Cython numpy build
+
+ENV SETUPTOOLS_SCM_PRETEND_VERSION=17.0.0
+
+RUN cd /arrow && echo "17.0.0" > .scm_version
+
+RUN sed -i.bak '/version_scheme/d' /arrow/python/pyproject.toml && \
+    sed -i.bak '/git_describe_command/d' /arrow/python/pyproject.toml && \
+    echo "Modified wheels/arrow/python/pyproject.toml to always use the fallback_version."
+
+RUN sed -i.bak "/setup(/a \    version='17.0.0'," /arrow/python/setup.py && \
+    echo "Added version line to /arrow/python/setup.py."
 
 # Build pyarrow wheel
-RUN cd /arrow/python && python3 setup.py build_ext bdist_wheel --plat-name=musllinux_aarch64 --dist-dir /tmp/wheels_temp
+RUN cd /arrow/python && python -m build --wheel
 
 # RUN pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} --no-binary ${PACKAGE_NAME} --no-deps -w /tmp/wheels_temp
 
 # List the contents of the /wheels directory to verify the build
-RUN ls -l /tmp/wheels_temp
+ RUN ls -l /arrow/python/dist
 
-RUN mkdir -p /wheels && cp /tmp/wheels_temp/*.whl /wheels/
+# RUN mkdir -p /wheels && cp /tmp/wheels_temp/*.whl /wheels/
 
 # https://github.com/jvolkman/repairwheel
-# RUN repairwheel /tmp/wheels_temp/*.whl -o /wheels
+RUN repairwheel /arrow/python/dist/*.whl -o /wheels
 
-RUN ls -l /wheels
+ RUN ls -l /wheels
 
-RUN auditwheel show /wheels/*.whl
+ RUN auditwheel show /wheels/*.whl
 
-
-FROM alpine:3.20.3
-
-COPY --from=builder /wheels /wheels
+#
+#FROM alpine:3.20.3
+#
+#COPY --from=builder /wheels /wheels
+#
+#COPY --from=builder /arrow /arrow
