@@ -109,15 +109,6 @@ RUN pip install --upgrade pip && pip install repairwheel wheel auditwheel Cython
 
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=17.0.0
 
-RUN cd /arrow && echo "17.0.0" > .scm_version
-
-RUN sed -i.bak '/version_scheme/d' /arrow/python/pyproject.toml && \
-    sed -i.bak '/git_describe_command/d' /arrow/python/pyproject.toml && \
-    echo "Modified wheels/arrow/python/pyproject.toml to always use the fallback_version."
-
-RUN sed -i.bak "/setup(/a \    version='17.0.0'," /arrow/python/setup.py && \
-    echo "Added version line to /arrow/python/setup.py."
-
 # Build pyarrow wheel
 RUN cd /arrow/python && python -m build --wheel
 
