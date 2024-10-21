@@ -52,6 +52,8 @@ RUN apk update && apk add --no-cache \
     libjpeg-turbo-dev \
     ninja \
     git \
+    unzip \
+    zip \
     && pip install --upgrade pip && pip install pipenv cython numpy
 
 ARG ARROW_SHA256=8379554d89f19f2c8db63620721cabade62541f47a4e706dfb0a401f05a713ef
@@ -69,68 +71,79 @@ RUN mkdir /arrow \
     && git clone --branch apache-arrow-${PACKAGE_VERSION} https://github.com/apache/arrow.git /arrow && \
     cd /arrow && git checkout apache-arrow-${PACKAGE_VERSION}
 
+
+COPY python_wheel_musllinux_build.sh /arrow/ci/scripts/
+
+ENV VCPKG_FORCE_SYSTEM_BINARIES=1
+ENV PYTHON_VERSION=3.12
+ENV MUSLLINUX_VERSION="1-2"
+RUN git clone https://github.com/microsoft/vcpkg.git /vcpkg && cd /vcpkg && ./bootstrap-vcpkg.sh
+
 # https://arrow.apache.org/docs/developers/guide/step_by_step/building.html
 # https://arrow.apache.org/docs/developers/cpp/building.html#cpp-building-building
-RUN mkdir /arrow/cpp/build
-
-# Create the patch file for re2
-RUN echo "diff --git a/util/pcre.h b/util/pcre.h" > /arrow/re2_patch.diff \
-    && echo "index e69de29..b6f3e31 100644" >> /arrow/re2_patch.diff \
-    && echo "--- a/util/pcre.h" >> /arrow/re2_patch.diff \
-    && echo "+++ b/util/pcre.h" >> /arrow/re2_patch.diff \
-    && echo "@@ -21,6 +21,7 @@" >> /arrow/re2_patch.diff \
-    && echo " #include \"re2/filtered_re2.h\"" >> /arrow/re2_patch.diff \
-    && echo " #include \"re2/pod_array.h\"" >> /arrow/re2_patch.diff \
-    && echo " #include \"re2/stringpiece.h\"" >> /arrow/re2_patch.diff \
-    && echo "+#include <cstdint>" >> /arrow/re2_patch.diff
-
-# Configure the build using CMake
-RUN cd /arrow/cpp \
-    && cmake --preset ninja-release-python
-
-# Pre-fetch dependencies without building
-RUN cd /arrow/cpp \
-    && cmake --build . --target re2_ep -- -j1 || true
-
-# Apply the patch to re2 after the dependencies are fetched but before the build
-RUN cd /arrow/cpp/re2_ep-prefix/src/re2_ep \
-    && patch -p1 < /arrow/re2_patch.diff
-
-# Continue with the build and install Apache Arrow
-RUN cd /arrow/cpp \
-    && cmake --build . --target install \
-    && rm -rf /tmp/apache-arrow.tar.gz
-
-WORKDIR /arrow/python
-
-# Create the patch file for re2
-RUN ls -haltR /arrow
-
-# Update pip
+#RUN mkdir /arrow/cpp/build
+#
+## Create the patch file for re2
+#RUN echo "diff --git a/util/pcre.h b/util/pcre.h" > /arrow/re2_patch.diff \
+#    && echo "index e69de29..b6f3e31 100644" >> /arrow/re2_patch.diff \
+#    && echo "--- a/util/pcre.h" >> /arrow/re2_patch.diff \
+#    && echo "+++ b/util/pcre.h" >> /arrow/re2_patch.diff \
+#    && echo "@@ -21,6 +21,7 @@" >> /arrow/re2_patch.diff \
+#    && echo " #include \"re2/filtered_re2.h\"" >> /arrow/re2_patch.diff \
+#    && echo " #include \"re2/pod_array.h\"" >> /arrow/re2_patch.diff \
+#    && echo " #include \"re2/stringpiece.h\"" >> /arrow/re2_patch.diff \
+#    && echo "+#include <cstdint>" >> /arrow/re2_patch.diff
+#
+## ENV CC=musl-gcc
+## ENV CXX=musl-g++
+#
+## Configure the build using CMake
+#RUN cd /arrow/cpp \
+#    && cmake --preset ninja-release-python
+#
+## Pre-fetch dependencies without building
+#RUN cd /arrow/cpp \
+#    && cmake --build . --target re2_ep -- -j1 || true
+#
+## Apply the patch to re2 after the dependencies are fetched but before the build
+#RUN cd /arrow/cpp/re2_ep-prefix/src/re2_ep \
+#    && patch -p1 < /arrow/re2_patch.diff
+#
+## Continue with the build and install Apache Arrow
+#RUN cd /arrow/cpp \
+#    && cmake --build . --target install \
+#    && rm -rf /tmp/apache-arrow.tar.gz
+#
+#WORKDIR /arrow/python
+#
+## Create the patch file for re2
+#RUN ls -haltR /arrow
+#
+## Update pip
 RUN pip install --upgrade pip && pip install repairwheel wheel auditwheel Cython numpy build setuptools setuptools_scm
-
+#
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=17.0.0
-
-# Build pyarrow wheel
-RUN cd /arrow/python && python -m build --wheel
-
-# RUN pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} --no-binary ${PACKAGE_NAME} --no-deps -w /tmp/wheels_temp
-
-# List the contents of the /wheels directory to verify the build
- RUN ls -l /arrow/python/dist
-
-# RUN mkdir -p /wheels && cp /tmp/wheels_temp/*.whl /wheels/
-
-# https://github.com/jvolkman/repairwheel
-RUN repairwheel /arrow/python/dist/*.whl -o /wheels
-
- RUN ls -l /wheels
-
- RUN auditwheel show /wheels/*.whl
-
 #
-#FROM alpine:3.20.3
+## Build pyarrow wheel
+# RUN cd /arrow/python && python -m build --wheel
 #
-#COPY --from=builder /wheels /wheels
+## RUN pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} --no-binary ${PACKAGE_NAME} --no-deps -w /tmp/wheels_temp
 #
-#COPY --from=builder /arrow /arrow
+## List the contents of the /wheels directory to verify the build
+# RUN ls -l /arrow/python/dist
+#
+## RUN mkdir -p /wheels && cp /tmp/wheels_temp/*.whl /wheels/
+#
+## https://github.com/jvolkman/repairwheel
+#RUN repairwheel /arrow/python/dist/*.whl -o /wheels
+#
+# RUN ls -l /wheels
+#
+# RUN auditwheel show /wheels/*.whl
+#
+##
+##FROM alpine:3.20.3
+##
+##COPY --from=builder /wheels /wheels
+##
+##COPY --from=builder /arrow /arrow
