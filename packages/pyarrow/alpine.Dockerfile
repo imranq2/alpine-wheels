@@ -71,6 +71,7 @@ RUN mkdir /arrow \
 
 # https://arrow.apache.org/docs/developers/guide/step_by_step/building.html
 # https://arrow.apache.org/docs/developers/cpp/building.html#cpp-building-building
+RUN mkdir /arrow/cpp/build
 
 # Create the patch file for re2
 RUN echo "diff --git a/util/pcre.h b/util/pcre.h" > /arrow/re2_patch.diff \
@@ -100,12 +101,13 @@ RUN cd /arrow/cpp \
     && cmake --build . --target install \
     && rm -rf /tmp/apache-arrow.tar.gz
 
+WORKDIR /arrow/python
+
+# Create the patch file for re2
 RUN ls -haltR /arrow
 
-# RUN echo 'version="17.0.0";version_tuple=(17,0,0);' > /arrow/python/pyarrow/_generated_version.py
-
 # Update pip
-RUN pip install --upgrade pip && pip install repairwheel wheel auditwheel Cython numpy build
+RUN pip install --upgrade pip && pip install repairwheel wheel auditwheel Cython numpy build setuptools setuptools_scm
 
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=17.0.0
 
