@@ -75,7 +75,7 @@ echo "=== (${PYTHON_VERSION}) Building Arrow C++ libraries ==="
 : ${CMAKE_GENERATOR:=Ninja}
 : ${VCPKG_ROOT:=/opt/vcpkg}
 : ${VCPKG_FEATURE_FLAGS:=-manifests}
-: ${VCPKG_TARGET_TRIPLET:=${VCPKG_DEFAULT_TRIPLET:-x64-linux-static-${CMAKE_BUILD_TYPE}}}
+: ${VCPKG_TARGET_TRIPLET:=${VCPKG_DEFAULT_TRIPLET:-arm64-linux-static-${CMAKE_BUILD_TYPE}}}
 
 if [[ "$(uname -m)" == arm* ]] || [[ "$(uname -m)" == aarch* ]]; then
     # Build jemalloc --with-lg-page=16 in order to make the wheel work on both

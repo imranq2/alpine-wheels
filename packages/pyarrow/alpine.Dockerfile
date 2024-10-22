@@ -76,8 +76,61 @@ COPY python_wheel_musllinux_build.sh /arrow/ci/scripts/
 
 ENV VCPKG_FORCE_SYSTEM_BINARIES=1
 ENV PYTHON_VERSION=3.12
-ENV MUSLLINUX_VERSION="1-2"
-RUN git clone https://github.com/microsoft/vcpkg.git /vcpkg && cd /vcpkg && ./bootstrap-vcpkg.sh
+ARG arch=arm64
+ARG arch_short=arm64
+ARG musllinux="1-2"
+
+ENV MUSLLINUX_VERSION=${musllinux}
+
+# ARG cmake=3.21.4
+#COPY ci/scripts/install_cmake.sh arrow/ci/scripts/
+# RUN /arrow/ci/scripts/install_cmake.sh ${arch} linux ${cmake} /usr/local
+
+# Install Ninja
+#ARG ninja=1.10.2
+#COPY ci/scripts/install_ninja.sh arrow/ci/scripts/
+#RUN /arrow/ci/scripts/install_ninja.sh ${ninja} /usr/local
+
+# Install ccache
+ARG ccache=4.1
+#COPY ci/scripts/install_ccache.sh arrow/ci/scripts/
+# RUN /arrow/ci/scripts/install_ccache.sh ${ccache} /usr/local
+
+# Install vcpkg
+ARG vcpkg=2024.09.30
+#COPY ci/vcpkg/*.patch \
+#     ci/vcpkg/*linux*.cmake \
+#     arrow/ci/vcpkg/
+#COPY ci/scripts/install_vcpkg.sh \
+#     arrow/ci/scripts/
+ENV VCPKG_ROOT=/opt/vcpkg
+ARG build_type=release
+ENV CMAKE_BUILD_TYPE=${build_type} \
+    VCPKG_FORCE_SYSTEM_BINARIES=1 \
+    VCPKG_OVERLAY_TRIPLETS=/arrow/ci/vcpkg \
+    VCPKG_DEFAULT_TRIPLET=${arch_short}-linux-static-${build_type} \
+    VCPKG_FEATURE_FLAGS="manifests"
+
+# RUN arrow/ci/scripts/install_vcpkg.sh ${VCPKG_ROOT} ${vcpkg}
+ENV PATH="${PATH}:${VCPKG_ROOT}"
+
+RUN git clone https://github.com/microsoft/vcpkg.git ${VCPKG_ROOT} && cd ${VCPKG_ROOT} && ./bootstrap-vcpkg.sh
+
+# cannot use the S3 feature here because while aws-sdk-cpp=1.9.160 contains
+# ssl related fixes as well as we can patch the vcpkg portfile to support
+# arm machines it hits ARROW-15141 where we would need to fall back to 1.8.186
+# but we cannot patch those portfiles since vcpkg-tool handles the checkout of
+# previous versions => use bundled S3 build
+RUN vcpkg install \
+        --clean-after-build \
+        --x-install-root=${VCPKG_ROOT}/installed \
+        --x-manifest-root=/arrow/ci/vcpkg \
+        --x-feature=azure \
+        --x-feature=flight \
+        --x-feature=gcs \
+        --x-feature=json \
+        --x-feature=parquet \
+        --x-feature=s3
 
 # https://arrow.apache.org/docs/developers/guide/step_by_step/building.html
 # https://arrow.apache.org/docs/developers/cpp/building.html#cpp-building-building
@@ -125,6 +178,7 @@ RUN pip install --upgrade pip && pip install repairwheel wheel auditwheel Cython
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=17.0.0
 #
 ## Build pyarrow wheel
+# RUN chmod +x /arrow/ci/scripts/python_wheel_musllinux_build.sh && /arrow/ci/scripts/python_wheel_musllinux_build.sh
 # RUN cd /arrow/python && python -m build --wheel
 #
 ## RUN pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} --no-binary ${PACKAGE_NAME} --no-deps -w /tmp/wheels_temp
