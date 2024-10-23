@@ -117,17 +117,20 @@ RUN cd /arrow/python && python -m build --wheel
 # RUN pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} --no-binary ${PACKAGE_NAME} --no-deps -w /tmp/wheels_temp
 
 # List the contents of the /wheels directory to verify the build
- RUN ls -l /arrow/python/dist
+RUN ls -l /arrow/python/dist
 
 # RUN mkdir -p /wheels && cp /tmp/wheels_temp/*.whl /wheels/
 
 # https://github.com/jvolkman/repairwheel
 RUN repairwheel /arrow/python/dist/*.whl -o /wheels
 
- RUN ls -l /wheels
+RUN ls -l /wheels
 
- RUN auditwheel show /wheels/*.whl
+RUN auditwheel show /wheels/*.whl
 
+COPY ./diagnose_wheel.py /diagnose_wheel.py
+
+# RUN pip install /wheels/*.whl
 #
 #FROM alpine:3.20.3
 #
