@@ -2,6 +2,8 @@
 import argparse
 from pathlib import Path
 import sys
+
+from packaging.tags import Tag
 from packaging.utils import parse_wheel_filename
 import platform
 
@@ -16,11 +18,19 @@ def diagnose_unsupported(p: Path) -> str:
         return f"'{p}' has incorrect suffix; the suffix must be .whl"
 
     # The wheel filename must parse:
-    _, _, _, tags = parse_wheel_filename(p.name)
+    tags: frozenset[Tag]
+    name, ver, build,  tags = parse_wheel_filename(p.name)
 
+    print(f"Name: {name}")
+    print(f"Version: {ver}")
+    print(f"Build: {build}")
+
+    print("Tags:")
     tag = None
     for t in tags:
+        print(t.abi, t.interpreter, t.platform)
         tag = t
+    print("End of tags")
 
     # Is a debug wheel being loaded in a non-debug interpreter?
     if tag.abi.endswith("d"):
@@ -33,8 +43,18 @@ def diagnose_unsupported(p: Path) -> str:
 
     # If the interpreter is version intolerant, what interpreter should it be using?
     idx = tag.interpreter.find("3")
-    if idx >= 0 and idx < len(tag.interpreter) - 1:
-        supported_minor = int(tag.interpreter[idx + 1])
+    if 0 <= idx < len(tag.interpreter) - 1:
+        # Iterate over the string starting from the next index
+        input_string = tag.interpreter[idx + 1:]
+        print(f"input_string: {input_string}")
+        index = 0
+        result = ""
+        while index < len(input_string) and input_string[index].isdigit():
+            result += input_string[index]
+            index += 1
+        print(f"result: {result}")
+        supported_minor = int(result)
+        print(f"Supported minor version: {supported_minor} and current minor version: {sys.version_info.minor}")
         if sys.version_info.minor != supported_minor:
             return f"The python minor version is {sys.version_info.minor}, but the wheel only supports minor version {supported_minor}"
 
@@ -56,12 +76,14 @@ def diagnose_unsupported(p: Path) -> str:
     if cpu_architecture != platform.machine():
         return f"The CPU architecture supported by the wheel is {cpu_architecture}, but the platform has architecture {platform.machine()}"
 
-    os_major, os_minor, os_patch = platform.mac_ver()[0].split(".")
-    if int(os_major) < int(wheel_os_version_major):
-        return f"The operating system major version is {os_major}, but the wheel requires at least OS major version {wheel_os_version_major}"
-    if int(os_major) == int(wheel_os_version_major):
-        if int(os_minor) < int(wheel_os_version_minor):
-            return f"The operating system minor version is {os_minor}, but the wheel requires at least OS major version {wheel_os_version_minor}"
+    print(f"platform.mac_ver()= {platform.mac_ver()}")
+    if platform.mac_ver()[0] != "":
+        os_major, os_minor, os_patch = platform.mac_ver()[0].split(".")
+        if int(os_major) < int(wheel_os_version_major):
+            return f"The operating system major version is {os_major}, but the wheel requires at least OS major version {wheel_os_version_major}"
+        if int(os_major) == int(wheel_os_version_major):
+            if int(os_minor) < int(wheel_os_version_minor):
+                return f"The operating system minor version is {os_minor}, but the wheel requires at least OS major version {wheel_os_version_minor}"
 
     return ""
 
