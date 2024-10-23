@@ -122,15 +122,22 @@ RUN ls -l /arrow/python/dist
 # RUN mkdir -p /wheels && cp /tmp/wheels_temp/*.whl /wheels/
 
 # https://github.com/jvolkman/repairwheel
-RUN repairwheel /arrow/python/dist/*.whl -o /wheels
+# RUN repairwheel /arrow/python/dist/*.whl -o /wheels
 
-RUN ls -l /wheels
+# RUN ls -l /wheels
 
-RUN auditwheel show /wheels/*.whl
+# RUN auditwheel show /wheels/*.whl
 
 COPY ./diagnose_wheel.py /diagnose_wheel.py
 
-# RUN pip install /wheels/*.whl
+# RUN pip -vvv install /wheels/pyarrow-17.0.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
+RUN pip -vvv install /arrow/python/dist/pyarrow-17.0.0-cp312-cp312-linux_aarch64.whl
+
+COPY ./test_pyarrow.py /test_pyarrow.py
+
+# Run the test script
+RUN python /test_pyarrow.py
+
 #
 #FROM alpine:3.20.3
 #
