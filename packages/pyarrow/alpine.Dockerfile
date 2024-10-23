@@ -121,6 +121,7 @@ RUN git clone https://github.com/microsoft/vcpkg.git ${VCPKG_ROOT} && cd ${VCPKG
 # arm machines it hits ARROW-15141 where we would need to fall back to 1.8.186
 # but we cannot patch those portfiles since vcpkg-tool handles the checkout of
 # previous versions => use bundled S3 build
+RUN vcpkg update
 RUN vcpkg install \
         --clean-after-build \
         --x-install-root=${VCPKG_ROOT}/installed \
