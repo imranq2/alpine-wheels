@@ -1,7 +1,7 @@
 ARG PYTHON_VERSION=3.12
 ARG ALPINE_VERSION=3.20
 
-FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS builder
 # Build wheels for the specified version
 ARG PACKAGE_NAME
 ARG PACKAGE_VERSION
@@ -119,28 +119,28 @@ RUN cd /arrow/python && python -m build --wheel
 # List the contents of the /wheels directory to verify the build
 RUN ls -l /arrow/python/dist
 
-# RUN mkdir -p /wheels && cp /tmp/wheels_temp/*.whl /wheels/
+RUN mkdir -p /wheels && cp /arrow/python/dist/*.whl /wheels/
 
 # https://github.com/jvolkman/repairwheel
 # RUN repairwheel /arrow/python/dist/*.whl -o /wheels
 
-# RUN ls -l /wheels
+RUN ls -l /wheels
 
-# RUN auditwheel show /wheels/*.whl
+RUN auditwheel show /wheels/*.whl
 
-COPY ./diagnose_wheel.py /diagnose_wheel.py
+# COPY ./diagnose_wheel.py /diagnose_wheel.py
+
+#
+FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+
+COPY --from=builder /wheels /wheels
+
+COPY --from=builder /arrow /arrow
 
 # RUN pip -vvv install /wheels/pyarrow-17.0.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
-RUN pip -vvv install /arrow/python/dist/pyarrow-17.0.0-cp312-cp312-linux_aarch64.whl
+RUN pip -vvv install /wheels/pyarrow-17.0.0-cp312-cp312-linux_aarch64.whl
 
 COPY ./test_pyarrow.py /test_pyarrow.py
 
 # Run the test script
 RUN python /test_pyarrow.py
-
-#
-#FROM alpine:3.20.3
-#
-#COPY --from=builder /wheels /wheels
-#
-#COPY --from=builder /arrow /arrow
