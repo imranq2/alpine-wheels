@@ -83,7 +83,7 @@ RUN ls -halt /arrow
 RUN python3.12 -m venv /venv && \
   . /venv/bin/activate && \
     python3.12 -m pip install --upgrade pip && \
-    python3.12 -m pip install wheel auditwheel Cython numpy build setuptools\>=59.6.0 setuptools_scm\>=8.1.0 && \
+    python3.12 -m pip install wheel auditwheel Cython numpy build setuptools>=59.6.0 setuptools_scm>=8.1.0 && \
     cd /arrow/python && \
     python3.12 setup.py build_ext --build-type=release --bundle-arrow-cpp bdist_wheel
 
