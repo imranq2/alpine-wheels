@@ -4,6 +4,8 @@ ARG DEBIAN_VERSION=bookworm
 ARG TARGETARCH=aarch64
 
 FROM quay.io/pypa/musllinux_1_2_${TARGETARCH} AS builder
+# from https://github.com/pypa/manylinux?tab=readme-ov-file#docker-images
+
 # Build wheels for the specified version
 ARG PACKAGE_NAME
 ARG PACKAGE_VERSION

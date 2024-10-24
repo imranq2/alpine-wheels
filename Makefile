@@ -103,3 +103,8 @@ pyarrow-shell:
 pyarrow:
 	cd packages/pyarrow && \
 	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=pyarrow --build-arg PACKAGE_VERSION=17.0.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
+
+.PHONY: pyarrow-debian
+pyarrow-debian:
+	cd packages/pyarrow && \
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=pyarrow --build-arg PACKAGE_VERSION=17.0.0 -t debian-wheel-builder:latest --output type=local,dest=../../wheels .
