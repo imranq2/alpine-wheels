@@ -24,7 +24,6 @@ on:
           - shapely
           - google-crc32c
           - grpcio
-          - fastapi
           - pymongo
           - sentence-transformers
           - nltk

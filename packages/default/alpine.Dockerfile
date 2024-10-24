@@ -73,6 +73,8 @@ RUN python3 -m venv /venv && \
     pip install wheel auditwheel Cython numpy build setuptools setuptools_scm && \
     pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} --no-binary ${PACKAGE_NAME} --no-deps -w /tmp/wheels
 
+RUN ls -l /tmp/wheels
+
 # Show the contents of the wheels using auditwheel
 RUN auditwheel show /tmp/wheels/*.whl
 

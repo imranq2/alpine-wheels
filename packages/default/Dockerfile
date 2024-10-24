@@ -47,6 +47,8 @@ RUN python3.12 -m venv /venv && \
     python3.12 -m pip install wheel auditwheel Cython numpy build setuptools setuptools_scm && \
     python3.12 -m pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} --no-binary ${PACKAGE_NAME} --no-deps -w /tmp/wheels
 
+RUN ls -l /tmp/wheels
+
 # Show the contents of the wheels using auditwheel
 RUN auditwheel show /tmp/wheels/*.whl
 

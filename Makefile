@@ -28,12 +28,6 @@ grpcio:
 	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=grpcio --build-arg PACKAGE_VERSION=1.66.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
 	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=grpcio --build-arg PACKAGE_VERSION=1.66.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
 
-.PHONY: fastapi
-fastapi:
-	cd packages/default && \
-	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=fastapi --build-arg PACKAGE_VERSION=0.112.2 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
-	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=fastapi --build-arg PACKAGE_VERSION=0.112.2 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
-
 .PHONY: pymongo
 pymongo:
 	cd packages/default && \
