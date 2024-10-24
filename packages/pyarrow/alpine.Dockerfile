@@ -2,7 +2,7 @@ ARG PYTHON_VERSION=3.12
 ARG ALPINE_VERSION=3.20
 ARG DEBIAN_VERSION=bookworm
 
-FROM quay.io/pypa/musllinux_1_2_aarch64
+FROM quay.io/pypa/musllinux_1_2_aarch64 AS builder
 # Build wheels for the specified version
 ARG PACKAGE_NAME
 ARG PACKAGE_VERSION
@@ -145,5 +145,30 @@ RUN auditwheel show /tmp/wheels/*.whl
 RUN auditwheel repair /tmp/wheels/*.whl -w /wheels
 
 RUN auditwheel show /wheels/*.whl
+
+RUN ls -l /wheels
+
+#
+FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS tester
+
+COPY --from=builder /wheels /wheels
+COPY ./test_pyarrow.py /test_pyarrow.py
+
+# Install runtime dependencies required by the application (e.g., for shapely, grpcio, scipy, google-crc32 and numpy)
+# You can use auditwheel to check any package and identify the native library dependencies
+RUN apk update && apk add --no-cache curl libstdc++ libffi git lz4-dev snappy
+
+# RUN pip -vvv install /wheels/pyarrow-17.0.0-cp312-cp312-musllinux_1_2_aarch64.whl
+RUN pip -vvv install /wheels/*.whl
+
+# Run the test script
+RUN python /test_pyarrow.py
+
+
+FROM alpine:3.20.3
+
+COPY --from=builder /wheels /wheels
+
+COPY --from=builder /arrow /arrow
 
 RUN ls -l /wheels
