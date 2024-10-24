@@ -108,3 +108,9 @@ pyarrow:
 pyarrow-debian:
 	cd packages/pyarrow && \
 	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=pyarrow --build-arg PACKAGE_VERSION=17.0.0 -t debian-wheel-builder:latest --output type=local,dest=../../wheels .
+
+.PHONY: pyarrow-debian-shell
+pyarrow-debian-shell:
+	cd packages/pyarrow && \
+	docker buildx build --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=pyarrow --build-arg PACKAGE_VERSION=17.0.0 -t debian-wheel-builder:latest . && \
+	docker run -it --rm debian-wheel-builder:latest sh

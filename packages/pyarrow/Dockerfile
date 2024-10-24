@@ -32,6 +32,7 @@ RUN dnf -y update && dnf -y install \
     cmake \
     wget \
     ninja-build \
+    python312 \
     && dnf clean all
 
 RUN gcc --version
@@ -68,6 +69,8 @@ RUN cd /arrow/cpp \
     && cmake --build . --target install \
     && rm -rf /tmp/apache-arrow.tar.gz
 
+ENV LD_LIBRARY_PATH=/arrow/cpp/build/release
+
 WORKDIR /arrow/python
 
 # Create the patch file for re2
@@ -76,12 +79,12 @@ RUN ls -halt /arrow
 # Update pip
 
 # https://arrow.apache.org/docs/developers/python.html#python-development
-RUN python3 -m venv /venv && \
+RUN python3.12 -m venv /venv && \
   . /venv/bin/activate && \
-    pip install --upgrade pip && \
-    pip install wheel auditwheel Cython numpy build setuptools setuptools_scm && \
+    python3.12 -m pip install --upgrade pip && \
+    python3.12 -m pip install wheel auditwheel Cython numpy build setuptools>=59.6.0 setuptools_scm>=8.1.0 && \
     cd /arrow/python && \
-    python setup.py build_ext --build-type=release --bundle-arrow-cpp bdist_wheel
+    python3.12 setup.py build_ext --build-type=release --bundle-arrow-cpp bdist_wheel
 
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=17.0.0
 
