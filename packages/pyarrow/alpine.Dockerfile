@@ -52,6 +52,8 @@ RUN apk update && apk add --no-cache \
     libjpeg-turbo-dev \
     ninja \
     git \
+    g++ \
+    gcc \
     && pip install --upgrade pip && pip install pipenv cython numpy
 
 ARG ARROW_SHA256=8379554d89f19f2c8db63620721cabade62541f47a4e706dfb0a401f05a713ef
@@ -65,13 +67,13 @@ ENV ARROW_HOME=/usr/local \
     ARROW_VERSION=${PACKAGE_VERSION} \
     VERSION=${PACKAGE_VERSION}
 
-RUN mkdir /arrow \
-    && git clone --branch apache-arrow-${PACKAGE_VERSION} https://github.com/apache/arrow.git /arrow && \
-    cd /arrow && git checkout apache-arrow-${PACKAGE_VERSION}
-
 #RUN mkdir /arrow \
-#    && curl -L https://github.com/apache/arrow/archive/refs/tags/apache-arrow-${PACKAGE_VERSION}.tar.gz -o /arrow/apache-arrow-${PACKAGE_VERSION}.tar.gz \
-#    && tar -xzf /arrow/apache-arrow-${PACKAGE_VERSION}.tar.gz -C /arrow --strip-components=1
+#    && git clone --branch apache-arrow-${PACKAGE_VERSION} https://github.com/apache/arrow.git /arrow && \
+#    cd /arrow && git checkout apache-arrow-${PACKAGE_VERSION}
+
+RUN mkdir /arrow \
+    && curl -L https://github.com/apache/arrow/archive/refs/tags/apache-arrow-${PACKAGE_VERSION}.tar.gz -o /arrow/apache-arrow-${PACKAGE_VERSION}.tar.gz \
+    && tar -xzf /arrow/apache-arrow-${PACKAGE_VERSION}.tar.gz -C /arrow --strip-components=1
 
 # https://arrow.apache.org/docs/developers/guide/step_by_step/building.html
 # https://arrow.apache.org/docs/developers/cpp/building.html#cpp-building-building
@@ -133,14 +135,16 @@ RUN ls -l /wheels
 
 RUN auditwheel show /wheels/*.whl
 
+RUN gcc --version
+
 # COPY ./diagnose_wheel.py /diagnose_wheel.py
 
 #
-FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS tester
 
 COPY --from=builder /wheels /wheels
 
-COPY --from=builder /arrow /arrow
+# COPY --from=builder /arrow /arrow
 
 # Install runtime dependencies required by the application (e.g., for shapely, grpcio, scipy, google-crc32 and numpy)
 # You can use auditwheel to check any package and identify the native library dependencies
@@ -153,3 +157,12 @@ COPY ./test_pyarrow.py /test_pyarrow.py
 
 # Run the test script
 RUN python /test_pyarrow.py
+
+
+FROM alpine:3.20.3
+
+COPY --from=builder /wheels /wheels
+
+COPY --from=builder /arrow /arrow
+
+RUN ls -l /wheels
