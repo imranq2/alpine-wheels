@@ -3,8 +3,8 @@ ARG ALPINE_VERSION=3.20
 ARG DEBIAN_VERSION=bookworm
 ARG TARGETARCH=aarch64
 
+# Use the appropriate base image based on the TARGETARCH argument
 FROM quay.io/pypa/musllinux_1_2_${TARGETARCH} AS builder
-# from https://github.com/pypa/manylinux?tab=readme-ov-file#docker-images
 
 # Build wheels for the specified version
 ARG PACKAGE_NAME
@@ -13,17 +13,19 @@ ARG PACKAGE_VERSION
 # Fix for getting same hash
 ARG SOURCE_DATE_EPOCH=1690000000
 ARG PYTHONHASHSEED=0
+
 # Set the environment variables based on the passed arguments
 ENV SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH}
 ENV PYTHONHASHSEED=${PYTHONHASHSEED}
 
-# Setup env
+# Setup environment variables
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONFAULTHANDLER=1
 ENV ACCEPT_EULA=Y
 
+# Install necessary packages and dependencies
 RUN apk update && apk add --no-cache \
     curl \
     unixodbc-dev \
@@ -63,11 +65,14 @@ RUN apk update && apk add --no-cache \
     python3-dev \
     re2-dev
 
+# Verify GCC installation
 RUN gcc --version
 
+# Set Arrow build arguments
 ARG ARROW_SHA256=8379554d89f19f2c8db63620721cabade62541f47a4e706dfb0a401f05a713ef
 ARG ARROW_BUILD_TYPE=release
 
+# Set environment variables for Arrow
 ENV ARROW_HOME=/usr/local \
     PARQUET_HOME=/usr/local \
     ARROW_PARQUET=1 \
@@ -76,35 +81,30 @@ ENV ARROW_HOME=/usr/local \
     ARROW_VERSION=${PACKAGE_VERSION} \
     VERSION=${PACKAGE_VERSION}
 
-#RUN mkdir /arrow \
-#    && git clone --branch apache-arrow-${PACKAGE_VERSION} https://github.com/apache/arrow.git /arrow && \
-#    cd /arrow && git checkout apache-arrow-${PACKAGE_VERSION}
-
+# Download and extract Apache Arrow source code
 RUN mkdir /arrow \
     && curl -L https://github.com/apache/arrow/archive/refs/tags/apache-arrow-${PACKAGE_VERSION}.tar.gz -o /arrow/apache-arrow-${PACKAGE_VERSION}.tar.gz \
     && tar -xzf /arrow/apache-arrow-${PACKAGE_VERSION}.tar.gz -C /arrow --strip-components=1
 
-# https://arrow.apache.org/docs/developers/guide/step_by_step/building.html
-# https://arrow.apache.org/docs/developers/cpp/building.html#cpp-building-building
+# Create build directory for Arrow
 RUN mkdir /arrow/cpp/build
 
 # Configure the build using CMake
 RUN cd /arrow/cpp \
     && cmake --preset ninja-release-python
 
-# Continue with the build and install Apache Arrow
+# Build and install Apache Arrow
 RUN cd /arrow/cpp \
     && cmake --build . --target install \
     && rm -rf /tmp/apache-arrow.tar.gz
 
+# Set working directory to Arrow Python bindings
 WORKDIR /arrow/python
 
-# Create the patch file for re2
+# List the contents of the /arrow directory
 RUN ls -halt /arrow
 
-# Update pip
-
-# https://arrow.apache.org/docs/developers/python.html#python-development
+# Update pip and install necessary Python packages
 RUN python3 -m venv /venv && \
   . /venv/bin/activate && \
     pip install --upgrade pip && \
@@ -112,47 +112,49 @@ RUN python3 -m venv /venv && \
     cd /arrow/python && \
     python setup.py build_ext --build-type=release --bundle-arrow-cpp bdist_wheel
 
+# Set the version for setuptools_scm
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=17.0.0
 
-# RUN pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} --no-binary ${PACKAGE_NAME} --no-deps -w /tmp/wheels_temp
-
-# List the contents of the /wheels directory to verify the build
+# List the contents of the /arrow/python/dist directory to verify the build
 RUN ls -l /arrow/python/dist
 
+# Copy the built wheels to a temporary directory
 RUN mkdir -p /tmp/wheels && cp /arrow/python/dist/*.whl /tmp/wheels/
 
-# https://github.com/jvolkman/repairwheel
-# RUN repairwheel /arrow/python/dist/*.whl -o /wheels
-
+# Show the contents of the wheels using auditwheel
 RUN auditwheel show /tmp/wheels/*.whl
 
+# Repair the wheels using auditwheel
 RUN auditwheel repair /tmp/wheels/*.whl -w /wheels
 
+# Show the contents of the repaired wheels
 RUN auditwheel show /wheels/*.whl
 
+# List the contents of the /wheels directory
 RUN ls -l /wheels
 
-#
+# Use a Python Alpine image for testing
 FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS tester
 
+# Copy the built wheels and test script from the builder stage
 COPY --from=builder /wheels /wheels
 COPY ./test_pyarrow.py /test_pyarrow.py
 
-# Install runtime dependencies required by the application (e.g., for shapely, grpcio, scipy, google-crc32 and numpy)
-# You can use auditwheel to check any package and identify the native library dependencies
+# Install runtime dependencies required by the application
 RUN apk update && apk add --no-cache curl libstdc++ libffi git lz4-dev snappy
 
-# RUN pip -vvv install /wheels/pyarrow-17.0.0-cp312-cp312-musllinux_1_2_aarch64.whl
+# Install the built wheels
 RUN pip -vvv install /wheels/*.whl
 
 # Run the test script
 RUN python /test_pyarrow.py
 
-
+# Use an Alpine image for the final stage
 FROM alpine:3.20.3
 
+# Copy the built wheels and Arrow source code from the builder stage
 COPY --from=builder /wheels /wheels
-
 COPY --from=builder /arrow /arrow
 
+# List the contents of the /wheels directory
 RUN ls -l /wheels
