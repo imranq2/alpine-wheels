@@ -2,7 +2,7 @@ ARG PYTHON_VERSION=3.12
 ARG ALPINE_VERSION=3.20
 ARG DEBIAN_VERSION=bookworm
 
-FROM quay.io/pypa/musllinux_1_2_aarch64 AS builder
+FROM quay.io/pypa/musllinux_1_2_aarch64
 # Build wheels for the specified version
 ARG PACKAGE_NAME
 ARG PACKAGE_VERSION
@@ -55,7 +55,11 @@ RUN apk update && apk add --no-cache \
     git \
     g++ \
     gcc \
-    && pip install --upgrade pip && pip install pipenv cython numpy
+    py-pip \
+    python3 \
+    python3-dev
+
+RUN gcc --version
 
 ARG ARROW_SHA256=8379554d89f19f2c8db63620721cabade62541f47a4e706dfb0a401f05a713ef
 ARG ARROW_BUILD_TYPE=release
@@ -115,68 +119,31 @@ WORKDIR /arrow/python
 RUN ls -haltR /arrow
 
 # Update pip
-RUN pip install --upgrade pip && pip install repairwheel wheel auditwheel Cython numpy build setuptools setuptools_scm
+
+# https://arrow.apache.org/docs/developers/python.html#python-development
+RUN python3 -m venv /venv && \
+  . /venv/bin/activate && \
+    pip install --upgrade pip && \
+    pip install repairwheel wheel auditwheel Cython numpy build setuptools setuptools_scm && \
+    cd /arrow/python && \
+    python setup.py build_ext --build-type=release --bundle-arrow-cpp bdist_wheel
 
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=17.0.0
-
-# Build pyarrow wheel
-# https://arrow.apache.org/docs/developers/python.html#python-development
-RUN cd /arrow/python && python setup.py build_ext --build-type=release --bundle-arrow-cpp bdist_wheel
 
 # RUN pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} --no-binary ${PACKAGE_NAME} --no-deps -w /tmp/wheels_temp
 
 # List the contents of the /wheels directory to verify the build
 RUN ls -l /arrow/python/dist
 
-RUN mkdir -p /wheels && cp /arrow/python/dist/*.whl /wheels/
+RUN mkdir -p /tmp/wheels && cp /arrow/python/dist/*.whl /tmp/wheels/
 
 # https://github.com/jvolkman/repairwheel
 # RUN repairwheel /arrow/python/dist/*.whl -o /wheels
 
-RUN auditwheel show /wheels/*.whl
+RUN auditwheel show /tmp/wheels/*.whl
 
-RUN ls -l /wheels
-
-RUN gcc --version
-
-# COPY ./diagnose_wheel.py /diagnose_wheel.py
-
-FROM quay.io/pypa/musllinux_1_2_aarch64 AS repaired
-
-# Update pip
-RUN pip install --upgrade pip && pip install repairwheel wheel auditwheel Cython numpy build setuptools setuptools_scm
-
-COPY --from=builder /wheels /wheels
+RUN auditwheel repair /tmp/wheels/*.whl -w /wheels
 
 RUN auditwheel show /wheels/*.whl
-
-RUN auditwheel repair /wheels/*.whl -w /wheels
-
-
-#
-FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS tester
-
-COPY --from=repaired /wheels /wheels
-
-# COPY --from=builder /arrow /arrow
-
-# Install runtime dependencies required by the application (e.g., for shapely, grpcio, scipy, google-crc32 and numpy)
-# You can use auditwheel to check any package and identify the native library dependencies
-RUN apk update && apk add --no-cache curl libstdc++ libffi git lz4-dev snappy
-
-# RUN pip -vvv install /wheels/pyarrow-17.0.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
-RUN pip -vvv install /wheels/pyarrow-17.0.0-cp312-cp312-linux_aarch64.whl
-
-COPY ./test_pyarrow.py /test_pyarrow.py
-
-# Run the test script
-RUN python /test_pyarrow.py
-
-
-FROM alpine:3.20.3
-
-COPY --from=repaired /wheels /wheels
-
-COPY --from=builder /arrow /arrow
 
 RUN ls -l /wheels
