@@ -1,8 +1,9 @@
 ARG PYTHON_VERSION=3.12
 ARG ALPINE_VERSION=3.20
 ARG DEBIAN_VERSION=bookworm
+ARG TARGETARCH=aarch64
 
-FROM quay.io/pypa/musllinux_1_2_aarch64 AS builder
+FROM quay.io/pypa/musllinux_1_2_${TARGETARCH} AS builder
 # Build wheels for the specified version
 ARG PACKAGE_NAME
 ARG PACKAGE_VERSION
@@ -97,7 +98,7 @@ RUN cd /arrow/cpp \
 WORKDIR /arrow/python
 
 # Create the patch file for re2
-RUN ls -haltR /arrow
+RUN ls -halt /arrow
 
 # Update pip
 
