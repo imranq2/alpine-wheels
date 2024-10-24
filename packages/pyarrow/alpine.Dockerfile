@@ -1,7 +1,8 @@
 ARG PYTHON_VERSION=3.12
 ARG ALPINE_VERSION=3.20
+ARG DEBIAN_VERSION=bookworm
 
-FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS builder
+FROM quay.io/pypa/musllinux_1_2_aarch64 AS builder
 # Build wheels for the specified version
 ARG PACKAGE_NAME
 ARG PACKAGE_VERSION
@@ -80,6 +81,7 @@ RUN mkdir /arrow \
 RUN mkdir /arrow/cpp/build
 
 # Create the patch file for re2
+# https://github.com/apache/arrow/issues/43350
 RUN echo "diff --git a/util/pcre.h b/util/pcre.h" > /arrow/re2_patch.diff \
     && echo "index e69de29..b6f3e31 100644" >> /arrow/re2_patch.diff \
     && echo "--- a/util/pcre.h" >> /arrow/re2_patch.diff \
@@ -131,18 +133,30 @@ RUN mkdir -p /wheels && cp /arrow/python/dist/*.whl /wheels/
 # https://github.com/jvolkman/repairwheel
 # RUN repairwheel /arrow/python/dist/*.whl -o /wheels
 
-RUN ls -l /wheels
-
 RUN auditwheel show /wheels/*.whl
+
+RUN ls -l /wheels
 
 RUN gcc --version
 
 # COPY ./diagnose_wheel.py /diagnose_wheel.py
 
+FROM quay.io/pypa/musllinux_1_2_aarch64 AS repaired
+
+# Update pip
+RUN pip install --upgrade pip && pip install repairwheel wheel auditwheel Cython numpy build setuptools setuptools_scm
+
+COPY --from=builder /wheels /wheels
+
+RUN auditwheel show /wheels/*.whl
+
+RUN auditwheel repair /wheels/*.whl -w /wheels
+
+
 #
 FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS tester
 
-COPY --from=builder /wheels /wheels
+COPY --from=repaired /wheels /wheels
 
 # COPY --from=builder /arrow /arrow
 
@@ -161,7 +175,7 @@ RUN python /test_pyarrow.py
 
 FROM alpine:3.20.3
 
-COPY --from=builder /wheels /wheels
+COPY --from=repaired /wheels /wheels
 
 COPY --from=builder /arrow /arrow
 
