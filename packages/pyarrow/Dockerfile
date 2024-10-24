@@ -61,9 +61,23 @@ RUN mkdir /arrow \
 # Create build directory for Arrow
 RUN mkdir /arrow/cpp/build
 
+# Set environment variables for CMake
+ARG CMAKE_DOWNLOAD_TIMEOUT=3600
+ARG APACHE_MIRROR=https://downloads.apache.org
+
+ENV CMAKE_TLS_VERIFY=ON
+ENV CMAKE_DOWNLOAD_TIMEOUT=${CMAKE_DOWNLOAD_TIMEOUT}
+
+# Create CMake initialization script
+#RUN echo "set(CMAKE_TLS_VERIFY ON)" > /cmake-init.cmake && \
+#    echo "set(CMAKE_DOWNLOAD_TIMEOUT ${CMAKE_DOWNLOAD_TIMEOUT})" >> /cmake-init.cmake && \
+#    echo "set(CMAKE_PROJECT_TOP_LEVEL_INCLUDES /cmake-init.cmake)" >> /cmake-init.cmake \
+
 # Configure the build using CMake
 RUN cd /arrow/cpp \
-    && cmake --preset ninja-release-python
+    && cmake -DCMAKE_TLS_VERIFY=ON \
+             -DCMAKE_DOWNLOAD_TIMEOUT=${CMAKE_DOWNLOAD_TIMEOUT} \
+             --preset ninja-release-python
 
 # Build and install Apache Arrow
 RUN cd /arrow/cpp \
