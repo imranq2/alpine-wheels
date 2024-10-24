@@ -57,7 +57,8 @@ RUN apk update && apk add --no-cache \
     gcc \
     py-pip \
     python3 \
-    python3-dev
+    python3-dev \
+    re2-dev
 
 RUN gcc --version
 
@@ -84,29 +85,9 @@ RUN mkdir /arrow \
 # https://arrow.apache.org/docs/developers/cpp/building.html#cpp-building-building
 RUN mkdir /arrow/cpp/build
 
-# Create the patch file for re2
-# https://github.com/apache/arrow/issues/43350
-RUN echo "diff --git a/util/pcre.h b/util/pcre.h" > /arrow/re2_patch.diff \
-    && echo "index e69de29..b6f3e31 100644" >> /arrow/re2_patch.diff \
-    && echo "--- a/util/pcre.h" >> /arrow/re2_patch.diff \
-    && echo "+++ b/util/pcre.h" >> /arrow/re2_patch.diff \
-    && echo "@@ -21,6 +21,7 @@" >> /arrow/re2_patch.diff \
-    && echo " #include \"re2/filtered_re2.h\"" >> /arrow/re2_patch.diff \
-    && echo " #include \"re2/pod_array.h\"" >> /arrow/re2_patch.diff \
-    && echo " #include \"re2/stringpiece.h\"" >> /arrow/re2_patch.diff \
-    && echo "+#include <cstdint>" >> /arrow/re2_patch.diff
-
 # Configure the build using CMake
 RUN cd /arrow/cpp \
     && cmake --preset ninja-release-python
-
-# Pre-fetch dependencies without building
-RUN cd /arrow/cpp \
-    && cmake --build . --target re2_ep -- -j1 || true
-
-# Apply the patch to re2 after the dependencies are fetched but before the build
-RUN cd /arrow/cpp/re2_ep-prefix/src/re2_ep \
-    && patch -p1 < /arrow/re2_patch.diff
 
 # Continue with the build and install Apache Arrow
 RUN cd /arrow/cpp \
