@@ -93,27 +93,30 @@ RUN python3 -m venv /venv && \
 
 RUN ls -l /tmp/wheels
 
+RUN mkdir -p /built_wheels
+
 # Show the contents of the wheels using auditwheel
 # Repair the wheels using auditwheel
 RUN for whl in /tmp/wheels/*.whl; do \
+        echo "Checking wheel $whl" && \
         if ! auditwheel show "$whl" 2>&1 | grep -q "platform wheel"; then \
             echo "Repairing wheel $whl"; \
-            auditwheel repair "$whl" -w /wheels; \
-            auditwheel show /wheels/*.whl; \
+            auditwheel repair "$whl" -w /built_wheels; \
+            auditwheel show /built_wheels/*.whl; \
         else \
-            echo "Copying wheel since not a platform wheel $whl"; \
-            cp "$whl" /wheels; \
+            echo "Copying wheel without repair since not a platform wheel $whl"; \
+            cp "$whl" /built_wheels/; \
         fi \
     done
 
 # List the contents of the /wheels directory
-RUN ls -l /wheels
+RUN ls -l /built_wheels
 
 # Use a Python Alpine image for testing
 FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS tester
 
 # Copy the built wheels and test script from the builder stage
-COPY --from=builder /wheels /wheels
+COPY --from=builder /built_wheels /wheels
 
 # Install runtime dependencies required by the application
 RUN apk update && apk add --no-cache curl libstdc++ libffi git lz4-dev snappy
@@ -122,10 +125,10 @@ RUN apk update && apk add --no-cache curl libstdc++ libffi git lz4-dev snappy
 RUN pip -vvv install /wheels/*.whl
 
 # Use an Alpine image for the final stage
-FROM alpine:3.20.3
+FROM alpine:${ALPINE_VERSION}
 
 # Copy the built wheels and Arrow source code from the builder stage
-COPY --from=builder /wheels /wheels
+COPY --from=builder /built_wheels /wheels
 
 # List the contents of the /wheels directory
 RUN ls -l /wheels

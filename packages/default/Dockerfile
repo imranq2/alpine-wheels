@@ -49,19 +49,25 @@ RUN python3.12 -m venv /venv && \
 
 RUN ls -l /tmp/wheels
 
+RUN mkdir -p /built_wheels
+
 # Show the contents of the wheels using auditwheel
 # Repair the wheels using auditwheel
 RUN for whl in /tmp/wheels/*.whl; do \
+        echo "Checking wheel $whl" && \
         if ! auditwheel show "$whl" 2>&1 | grep -q "platform wheel"; then \
-            auditwheel repair "$whl" -w /wheels; \
-            auditwheel show /wheels/*.whl; \
+            echo "Repairing wheel $whl"; \
+            auditwheel repair "$whl" -w /built_wheels; \
+            auditwheel show /built_wheels/*.whl; \
         else \
-            cp "$whl" /wheels; \
+            echo "Copying wheel without repair since not a platform wheel $whl"; \
+            cp "$whl" /built_wheels/; \
         fi \
     done
 
 # List the contents of the /wheels directory
-RUN ls -l /wheels
+RUN ls -l /built_wheels
+
 
 # Use a Python slim Debian image for testing
 FROM python:${PYTHON_VERSION}-slim-${DEBIAN_VERSION} AS tester
