@@ -15,7 +15,7 @@ ARG SOURCE_DATE_EPOCH=1690000000
 ARG PYTHONHASHSEED=0
 
 # For source code packages
-ARG GITHUB_URL
+ARG GITHUB_URL=https://github.com/microsoft/playwright-python.git
 
 # Set the environment variables based on the passed arguments
 ENV SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH}
