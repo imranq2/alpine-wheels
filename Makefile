@@ -60,8 +60,7 @@ python-crfsuite:
 .PHONY: torch
 torch:
 	cd packages/torch && \
-	docker buildx build --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=torch --build-arg PACKAGE_VERSION=2.4.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels,src=/wheels . && \
-	docker buildx build --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=torch --build-arg PACKAGE_VERSION=2.4.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels,src=/wheels .
+	docker buildx build --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=torch --build-arg PACKAGE_VERSION=2.4.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels,src=/wheels .
 
 .PHONY: transformers
 transformers:
@@ -108,3 +107,9 @@ pyarrow-debian-shell:
 	cd packages/pyarrow && \
 	docker buildx build --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=pyarrow --build-arg PACKAGE_VERSION=17.0.0 -t debian-wheel-builder:latest . && \
 	docker run -it --rm debian-wheel-builder:latest sh
+
+.PHONY: playwright
+playwright:
+	cd packages/default && \
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=playwright --build-arg PACKAGE_VERSION=1.49.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=playwright --build-arg PACKAGE_VERSION=1.49.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .

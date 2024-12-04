@@ -45,7 +45,7 @@ RUN python3.12 -m venv /venv && \
     . /venv/bin/activate && \
     python3.12 -m pip install --upgrade pip && \
     python3.12 -m pip install wheel auditwheel Cython numpy build setuptools setuptools_scm && \
-    python3.12 -m pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} --no-binary ${PACKAGE_NAME} --no-deps -w /tmp/wheels
+    python3.12 -m pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} ${PACKAGE_NAME} --no-deps -w /tmp/wheels
 
 RUN ls -l /tmp/wheels
 
