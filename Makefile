@@ -112,4 +112,4 @@ pyarrow-debian-shell:
 playwright:
 	cd packages/playwright && \
 	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f Dockerfile --build-arg PACKAGE_NAME=playwright --build-arg PACKAGE_VERSION=1.49.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels . && \
-	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=playwright --build-arg PACKAGE_VERSION=1.49.0 -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .
+	docker buildx build --no-cache --progress=plain --platform linux/arm64 -f alpine.Dockerfile --build-arg PACKAGE_NAME=playwright --build-arg PACKAGE_VERSION=1.49.0 --build-arg GITHUB_URL=https://github.com/microsoft/playwright-python.git -t alpine-wheel-builder:latest --output type=local,dest=../../wheels .

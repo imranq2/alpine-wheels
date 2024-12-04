@@ -14,6 +14,9 @@ ARG PACKAGE_VERSION
 ARG SOURCE_DATE_EPOCH=1690000000
 ARG PYTHONHASHSEED=0
 
+# For source code packages
+ARG GITHUB_URL
+
 # Set the environment variables based on the passed arguments
 ENV SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH}
 ENV PYTHONHASHSEED=${PYTHONHASHSEED}
@@ -69,12 +72,17 @@ RUN apk update && apk add --no-cache \
 WORKDIR /build
 
 # Clone Playwright repository
-RUN git clone --branch v${PACKAGE_VERSION} https://github.com/microsoft/playwright-python.git && \
-    cd playwright-python && \
+# Clone repository using build args
+RUN if [ "${PACKAGE_VERSION}" = "latest" ]; then \
+        git clone ${GITHUB_URL} ${PACKAGE_NAME}; \
+    else \
+        git clone --branch v${PACKAGE_VERSION} ${GITHUB_URL} ${PACKAGE_NAME}; \
+    fi && \
+    cd ${PACKAGE_NAME} && \
     git submodule update --init --recursive
 
-# Install Playwright's build dependencies
-WORKDIR /build/playwright-python
+# Move to package directory
+WORKDIR /build/${PACKAGE_NAME}
 
 # Update pip and install necessary Python packages
 RUN python3 -m venv /venv && \
