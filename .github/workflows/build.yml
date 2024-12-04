@@ -109,6 +109,7 @@ jobs:
           --build-arg PYTHON_VERSION=${{ github.event.inputs.python_version }} \
           --build-arg SOURCE_DATE_EPOCH=${{ fromJSON(env.SOURCE_DATE_EPOCH) }} \
           --build-arg PYTHONHASHSEED=${{ fromJSON(env.PYTHONHASHSEED) }} \
+          --build-arg TARGETARCH=${{ matrix.arch }} \
           -f $PACKAGE_DOCKERFILE \
           -t my-${{ env.PACKAGE_NAME }}-builder:latest \
           --output type=local,dest=./wheels_output .
