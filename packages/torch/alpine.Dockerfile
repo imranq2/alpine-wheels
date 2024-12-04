@@ -1,7 +1,8 @@
 ARG PYTHON_VERSION=3.12
 ARG ALPINE_VERSION=3.20
+ARG TARGETARCH=aarch64
 
-FROM public.ecr.aws/docker/library/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS builder
+FROM quay.io/pypa/musllinux_1_2_${TARGETARCH} AS builder
 # Build wheels for the specified version
 ARG PACKAGE_NAME
 ARG PACKAGE_VERSION
@@ -69,14 +70,26 @@ RUN cd pytorch && python3 setup.py bdist_wheel --dist-dir /tmp/wheels_temp
 # List the contents of the /wheels directory to verify the build
 RUN ls -l /tmp/wheels_temp
 
-RUN pip install repairwheel
+RUN mkdir -p /built_wheels
 
-# https://github.com/jvolkman/repairwheel
-RUN repairwheel /tmp/wheels_temp/*.whl -o /wheels
+# Show the contents of the wheels using auditwheel
+# Repair the wheels using auditwheel
+RUN for whl in /tmp/wheels/*.whl; do \
+        echo "Checking wheel $whl" && \
+        if ! auditwheel show "$whl" 2>&1 | grep -q "platform wheel"; then \
+            echo "Repairing wheel $whl"; \
+            auditwheel repair "$whl" -w /built_wheels; \
+            auditwheel show /built_wheels/*.whl; \
+        else \
+            echo "Copying wheel without repair since not a platform wheel $whl"; \
+            cp "$whl" /built_wheels/; \
+        fi \
+    done
 
-RUN ls -l /wheels
+# List the contents of the /wheels directory
+RUN ls -l /built_wheels
 
 
 FROM alpine:${ALPINE_VERSION}
 
-COPY --from=builder /wheels /wheels
+COPY --from=builder /built_wheels /wheels
