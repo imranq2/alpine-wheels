@@ -12,15 +12,21 @@ RUN apt-get update && apt-get install -y \
 # Build wheels for the specified version
 ARG PACKAGE_NAME
 ARG PACKAGE_VERSION
-RUN pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} ${PACKAGE_NAME} --no-deps -w /tmp/wheels_temp
+RUN pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} ${PACKAGE_NAME} --no-deps -w /tmp/wheels
 
 # List the contents of the /wheels directory to verify the build
-RUN ls -l /tmp/wheels_temp
+RUN ls -l /tmp/wheels
 
-RUN pip install repairwheel
-
-# https://github.com/jvolkman/repairwheel
-RUN repairwheel /tmp/wheels_temp/*.whl -o /wheels
+# Show the contents of the wheels using auditwheel
+# Repair the wheels using auditwheel
+RUN for whl in /tmp/wheels/*.whl; do \
+        if ! auditwheel show "$whl" 2>&1 | grep -q "platform wheel"; then \
+            auditwheel repair "$whl" -w /wheels; \
+            auditwheel show /wheels/*.whl; \
+        else \
+            cp "$whl" /wheels; \
+        fi \
+    done
 
 RUN ls -l /wheels
 

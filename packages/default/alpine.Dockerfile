@@ -71,18 +71,20 @@ RUN python3 -m venv /venv && \
   . /venv/bin/activate && \
     pip install --upgrade pip && \
     pip install wheel auditwheel Cython numpy build setuptools setuptools_scm && \
-    pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} --no-binary ${PACKAGE_NAME} --no-deps -w /tmp/wheels
+    pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} ${PACKAGE_NAME} --no-deps -w /tmp/wheels
 
 RUN ls -l /tmp/wheels
 
 # Show the contents of the wheels using auditwheel
-RUN auditwheel show /tmp/wheels/*.whl
-
 # Repair the wheels using auditwheel
-RUN auditwheel repair /tmp/wheels/*.whl -w /wheels
-
-# Show the contents of the repaired wheels
-RUN auditwheel show /wheels/*.whl
+RUN for whl in /tmp/wheels/*.whl; do \
+        if ! auditwheel show "$whl" 2>&1 | grep -q "platform wheel"; then \
+            auditwheel repair "$whl" -w /wheels; \
+            auditwheel show /wheels/*.whl; \
+        else \
+            cp "$whl" /wheels; \
+        fi \
+    done
 
 # List the contents of the /wheels directory
 RUN ls -l /wheels
