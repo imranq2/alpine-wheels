@@ -33,6 +33,7 @@ on:
           - biotite
           - tiktoken
           - pyarrow
+          - playwright
       custom_package_name:
         description: 'Custom package name to build (if set, overrides package_name)'
         required: false
