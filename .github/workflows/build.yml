@@ -44,7 +44,7 @@ on:
 
 jobs:
   build-wheels:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.arch == 'aarch64' && 'ubuntu-22.04-arm64' || 'ubuntu-latest' }}
     name: ${{ matrix.platform }} ${{ matrix.arch }} ${{ github.event.inputs.package_name }} ${{ github.event.inputs.package_version }} on Python ${{ github.event.inputs.python_version }}
     strategy:
       matrix:
