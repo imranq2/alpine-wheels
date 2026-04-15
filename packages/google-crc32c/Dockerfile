@@ -1,4 +1,5 @@
 ARG PYTHON_VERSION=3.12
+ARG ALPINE_VERSION=3.20
 ARG DEBIAN_VERSION=bookworm
 
 FROM python:${PYTHON_VERSION}-slim-${DEBIAN_VERSION} AS builder
@@ -6,8 +7,8 @@ FROM python:${PYTHON_VERSION}-slim-${DEBIAN_VERSION} AS builder
 # Update pip
 RUN pip install --upgrade pip
 
-# Install repairwheel
-RUN pip install repairwheel
+# Install auditwheel for manylinux wheel repair
+RUN pip install auditwheel patchelf
 
 # Build wheels for the specified version
 ARG PACKAGE_NAME
@@ -17,12 +18,12 @@ RUN pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} --no-
 # List the contents of the /wheels directory to verify the build
 RUN ls -l /tmp/wheels_temp
 
-# https://github.com/jvolkman/repairwheel
-RUN repairwheel /tmp/wheels_temp/*.whl -o /wheels
+# Repair wheels for manylinux compatibility
+RUN auditwheel repair /tmp/wheels_temp/*.whl -w /wheels
 
 RUN ls -l /wheels
 
 
-FROM alpine:3.20.3
+FROM alpine:${ALPINE_VERSION}
 
 COPY --from=builder /wheels /wheels

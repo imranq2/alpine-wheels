@@ -53,7 +53,7 @@ RUN gcc --version
 RUN python3.12 -m venv /venv && \
     . /venv/bin/activate && \
     python3.12 -m pip install --upgrade pip && \
-    python3.12 -m pip install wheel auditwheel Cython numpy build setuptools setuptools_scm && \
+    python3.12 -m pip install wheel==0.45.1 auditwheel==6.2.0 Cython==3.0.12 numpy==2.2.4 build==1.2.2 setuptools==75.8.2 setuptools_scm==8.2.0 && \
     python3.12 -m pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} --no-binary ${PACKAGE_NAME} --no-deps -w /tmp/wheels
 
 RUN ls -l /tmp/wheels
@@ -90,7 +90,7 @@ RUN apt-get update && apt-get install -y \
 RUN pip -vvv install /wheels/*.whl
 
 # Use an Alpine image for the final stage
-FROM alpine:3.20.3
+FROM alpine:${ALPINE_VERSION}
 
 # Copy the built wheels and Arrow source code from the builder stage
 COPY --from=builder /wheels /wheels

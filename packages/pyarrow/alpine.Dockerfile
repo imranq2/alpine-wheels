@@ -81,9 +81,10 @@ ENV ARROW_HOME=/usr/local \
     ARROW_VERSION=${PACKAGE_VERSION} \
     VERSION=${PACKAGE_VERSION}
 
-# Download and extract Apache Arrow source code
+# Download and extract Apache Arrow source code with checksum verification
 RUN mkdir /arrow \
     && curl -L https://github.com/apache/arrow/archive/refs/tags/apache-arrow-${PACKAGE_VERSION}.tar.gz -o /arrow/apache-arrow-${PACKAGE_VERSION}.tar.gz \
+    && echo "${ARROW_SHA256}  /arrow/apache-arrow-${PACKAGE_VERSION}.tar.gz" | sha256sum -c - \
     && tar -xzf /arrow/apache-arrow-${PACKAGE_VERSION}.tar.gz -C /arrow --strip-components=1
 
 # Create build directory for Arrow
@@ -117,7 +118,7 @@ RUN ls -halt /arrow
 RUN python3 -m venv /venv && \
   . /venv/bin/activate && \
     pip install --upgrade pip && \
-    pip install repairwheel wheel auditwheel Cython numpy build setuptools setuptools_scm && \
+    pip install repairwheel==0.6.2 wheel==0.45.1 auditwheel==6.2.0 Cython==3.0.12 numpy==2.2.4 build==1.2.2 setuptools==75.8.2 setuptools_scm==8.2.0 && \
     cd /arrow/python && \
     python setup.py build_ext --build-type=release --bundle-arrow-cpp bdist_wheel
 
@@ -159,11 +160,10 @@ RUN pip -vvv install /wheels/*.whl
 RUN python /test_pyarrow.py
 
 # Use an Alpine image for the final stage
-FROM alpine:3.20.3
+FROM alpine:${ALPINE_VERSION}
 
-# Copy the built wheels and Arrow source code from the builder stage
+# Copy the built wheels from the builder stage
 COPY --from=builder /wheels /wheels
-COPY --from=builder /arrow /arrow
 
 # List the contents of the /wheels directory
 RUN ls -l /wheels

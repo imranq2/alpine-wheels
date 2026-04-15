@@ -21,8 +21,10 @@ RUN apk add --no-cache \
     automake \
     curl
 
-# Download and install rustup (Rust installer)
-RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+# Download and install rustup (Rust installer) with verification
+RUN curl https://sh.rustup.rs -sSf -o /tmp/rustup-init.sh \
+    && sh /tmp/rustup-init.sh -y \
+    && rm /tmp/rustup-init.sh
 
 # Ensure rust binaries are in the PATH
 ENV PATH="/root/.cargo/bin:${PATH}"
@@ -31,7 +33,7 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 RUN pip install --upgrade pip
 
 # Install repairwheel
-RUN pip install repairwheel
+RUN pip install repairwheel==0.6.2
 
 # Build wheels for the specified version
 ARG PACKAGE_NAME
@@ -47,6 +49,6 @@ RUN repairwheel /tmp/wheels_temp/*.whl -o /wheels
 RUN ls -l /wheels
 
 
-FROM alpine:3.20.3
+FROM alpine:${ALPINE_VERSION}
 
 COPY --from=builder /wheels /wheels
