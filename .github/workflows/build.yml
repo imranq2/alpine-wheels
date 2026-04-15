@@ -44,12 +44,17 @@ on:
 
 jobs:
   build-wheels:
-    runs-on: ${{ matrix.arch == 'aarch64' && 'ubuntu-22.04-arm64' || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.runner }}
     name: ${{ matrix.platform }} ${{ matrix.arch }} ${{ github.event.inputs.package_name }} ${{ github.event.inputs.package_version }} on Python ${{ github.event.inputs.python_version }}
     strategy:
       matrix:
         arch: [aarch64, x86_64]
         platform: [debian, alpine]
+        include:
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+          - arch: x86_64
+            runner: ubuntu-latest
     env:
       SOURCE_DATE_EPOCH: 1690000000  # Fixed timestamp for reproducibility
       PYTHONHASHSEED: 0  # Ensure deterministic builds
@@ -80,12 +85,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Pull binfmt image
-        run: docker pull docker.io/tonistiigi/binfmt:qemu-v6.2.0
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
