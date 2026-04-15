@@ -73,7 +73,7 @@ RUN ls -l /built_wheels
 FROM python:${PYTHON_VERSION}-slim-${DEBIAN_VERSION} AS tester
 
 # Copy the built wheels and test script from the builder stage
-COPY --from=builder /wheels /wheels
+COPY --from=builder /built_wheels /wheels
 
 # Install runtime dependencies required by the application
 RUN apt-get update && apt-get install -y \
@@ -92,7 +92,7 @@ RUN pip -vvv install /wheels/*.whl
 FROM alpine:3.20.3
 
 # Copy the built wheels and Arrow source code from the builder stage
-COPY --from=builder /wheels /wheels
+COPY --from=builder /built_wheels /wheels
 
 # List the contents of the /wheels directory
 RUN ls -l /wheels
