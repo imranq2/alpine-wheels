@@ -16,23 +16,12 @@ ARG PACKAGE_VERSION
 RUN python3 -m venv /venv && \
   . /venv/bin/activate && \
     pip install --upgrade pip && \
-    pip install wheel auditwheel Cython numpy build setuptools setuptools_scm && \
-    pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} ${PACKAGE_NAME} --no-deps -w /tmp/wheels && \
-    mkdir -p /built_wheels && \
-    for whl in /tmp/wheels/*.whl; do \
-        echo "Checking wheel $whl" && \
-        if ! auditwheel show "$whl" 2>&1 | grep -q "platform wheel"; then \
-            echo "Repairing wheel $whl"; \
-            auditwheel repair "$whl" -w /built_wheels; \
-            auditwheel show /built_wheels/*.whl; \
-        else \
-            echo "Copying wheel without repair since not a platform wheel $whl"; \
-            cp "$whl" /built_wheels/; \
-        fi \
-    done
+    pip install wheel==0.45.1 auditwheel==6.2.0 Cython==3.0.12 numpy==2.2.4 build==1.2.2 setuptools==75.8.2 setuptools_scm==8.2.0 && \
+    pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} ${PACKAGE_NAME} --no-deps -w /tmp/wheels
 
-# List the contents of the /wheels directory
-RUN ls -l /built_wheels
+# Conditionally repair wheels (platform wheels get repaired, pure-Python copied as-is)
+COPY packages/scripts/repair-wheels.sh /repair-wheels.sh
+RUN /repair-wheels.sh /tmp/wheels /built_wheels
 
 
 FROM alpine:${ALPINE_VERSION}

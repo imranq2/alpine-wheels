@@ -15,7 +15,7 @@ RUN echo "https://mirror.leaseweb.com/alpine/edge/community" >> /etc/apk/reposit
 RUN pip install --upgrade pip
 
 # Install repairwheel
-RUN pip install repairwheel
+RUN pip install repairwheel==0.6.2
 
 # Build wheels for the specified version
 ARG PACKAGE_NAME
@@ -31,6 +31,6 @@ RUN repairwheel /tmp/wheels_temp/*.whl -o /wheels
 RUN ls -l /wheels
 
 
-FROM alpine:3.20.3
+FROM alpine:${ALPINE_VERSION}
 
 COPY --from=builder /wheels /wheels

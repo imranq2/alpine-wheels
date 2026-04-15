@@ -44,29 +44,14 @@ RUN gcc --version
 RUN python3.12 -m venv /venv && \
     . /venv/bin/activate && \
     python3.12 -m pip install --upgrade pip && \
-    python3.12 -m pip install wheel auditwheel Cython numpy build setuptools setuptools_scm && \
+    python3.12 -m pip install wheel==0.45.1 auditwheel==6.2.0 Cython==3.0.12 numpy==2.2.4 build==1.2.2 setuptools==75.8.2 setuptools_scm==8.2.0 && \
     python3.12 -m pip wheel --verbose --no-cache-dir ${PACKAGE_NAME}==${PACKAGE_VERSION} ${PACKAGE_NAME} --no-deps -w /tmp/wheels
 
 RUN ls -l /tmp/wheels
 
-RUN mkdir -p /built_wheels
-
-# Show the contents of the wheels using auditwheel
-# Repair the wheels using auditwheel
-RUN for whl in /tmp/wheels/*.whl; do \
-        echo "Checking wheel $whl" && \
-        if ! auditwheel show "$whl" 2>&1 | grep -q "platform wheel"; then \
-            echo "Repairing wheel $whl"; \
-            auditwheel repair "$whl" -w /built_wheels; \
-            auditwheel show /built_wheels/*.whl; \
-        else \
-            echo "Copying wheel without repair since not a platform wheel $whl"; \
-            cp "$whl" /built_wheels/; \
-        fi \
-    done
-
-# List the contents of the /wheels directory
-RUN ls -l /built_wheels
+# Conditionally repair wheels (platform wheels get repaired, pure-Python copied as-is)
+COPY packages/scripts/repair-wheels.sh /repair-wheels.sh
+RUN /repair-wheels.sh /tmp/wheels /built_wheels
 
 # Use a Python slim Debian image for testing
 FROM python:${PYTHON_VERSION}-slim-${DEBIAN_VERSION} AS tester

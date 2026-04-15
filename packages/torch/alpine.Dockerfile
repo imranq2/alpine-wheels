@@ -16,7 +16,7 @@ RUN git clone --recursive --branch v${PACKAGE_VERSION} https://github.com/pytorc
 RUN apk add --no-cache gfortran openblas-dev lapack-dev cython py3-pip py3-setuptools py3-wheel linux-headers
 RUN apk add --no-cache git cmake make build-base musl-dev python3-dev py3-pip cython
 RUN apk add --no-cache openblas-dev lapack-dev
-RUN pip install setuptools wheel pyyaml cython typing_extensions
+RUN pip install setuptools==75.8.2 wheel==0.45.1 pyyaml==6.0.2 cython==3.0.12 typing_extensions==4.12.2
 RUN apk add --no-cache gfortran openblas-dev lapack-dev cython py3-pip py3-setuptools py3-wheel linux-headers
 RUN #pip install mkl-static mkl-include
 RUN apk add --no-cache cmake make build-base musl-dev libffi-dev openssl-dev zlib-dev
@@ -70,24 +70,9 @@ RUN cd pytorch && python3 setup.py bdist_wheel --dist-dir /tmp/wheels_temp
 # List the contents of the /wheels directory to verify the build
 RUN ls -l /tmp/wheels_temp
 
-RUN mkdir -p /built_wheels
-
-# Show the contents of the wheels using auditwheel
-# Repair the wheels using auditwheel
-RUN for whl in /tmp/wheels/*.whl; do \
-        echo "Checking wheel $whl" && \
-        if ! auditwheel show "$whl" 2>&1 | grep -q "platform wheel"; then \
-            echo "Repairing wheel $whl"; \
-            auditwheel repair "$whl" -w /built_wheels; \
-            auditwheel show /built_wheels/*.whl; \
-        else \
-            echo "Copying wheel without repair since not a platform wheel $whl"; \
-            cp "$whl" /built_wheels/; \
-        fi \
-    done
-
-# List the contents of the /wheels directory
-RUN ls -l /built_wheels
+# Conditionally repair wheels (platform wheels get repaired, pure-Python copied as-is)
+COPY packages/scripts/repair-wheels.sh /repair-wheels.sh
+RUN /repair-wheels.sh /tmp/wheels_temp /built_wheels
 
 
 FROM alpine:${ALPINE_VERSION}
